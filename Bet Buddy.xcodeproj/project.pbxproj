@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8B320225F04CC9AEDA2DA412 /* Pods_Bet_Buddy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9FC8D3864F71DDB86CD6492 /* Pods_Bet_Buddy.framework */; };
 		F1146FEF25BC130600DE677F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1146FEE25BC130600DE677F /* AppDelegate.swift */; };
 		F1146FF125BC130600DE677F /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1146FF025BC130600DE677F /* SceneDelegate.swift */; };
 		F1146FF325BC130600DE677F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1146FF225BC130600DE677F /* ViewController.swift */; };
@@ -14,9 +15,15 @@
 		F1146FF925BC130700DE677F /* Bet_Buddy.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = F1146FF725BC130700DE677F /* Bet_Buddy.xcdatamodeld */; };
 		F1146FFB25BC130E00DE677F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F1146FFA25BC130E00DE677F /* Assets.xcassets */; };
 		F1146FFE25BC130E00DE677F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F1146FFC25BC130E00DE677F /* LaunchScreen.storyboard */; };
+		F114700825BC9B1500DE677F /* NTR-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F114700725BC9B1500DE677F /* NTR-Regular.ttf */; };
+		F114701F25C3ADA300DE677F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F114701E25C3ADA300DE677F /* GoogleService-Info.plist */; };
+		F17181F425C4F533007B5F8F /* Gamemode.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17181F325C4F533007B5F8F /* Gamemode.swift */; };
+		F178BF3125C4FE9B00D521D2 /* Colours.swift in Sources */ = {isa = PBXBuildFile; fileRef = F178BF3025C4FE9B00D521D2 /* Colours.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		03356D0510B47374EE6F853E /* Pods-Bet Buddy.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Bet Buddy.release.xcconfig"; path = "Target Support Files/Pods-Bet Buddy/Pods-Bet Buddy.release.xcconfig"; sourceTree = "<group>"; };
+		D9FC8D3864F71DDB86CD6492 /* Pods_Bet_Buddy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Bet_Buddy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1146FEB25BC130600DE677F /* Bet Buddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Bet Buddy.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1146FEE25BC130600DE677F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F1146FF025BC130600DE677F /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -26,6 +33,11 @@
 		F1146FFA25BC130E00DE677F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F1146FFD25BC130E00DE677F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F1146FFF25BC130E00DE677F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F114700725BC9B1500DE677F /* NTR-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "NTR-Regular.ttf"; path = "../../../../../Downloads/NTR/NTR-Regular.ttf"; sourceTree = "<group>"; };
+		F114701E25C3ADA300DE677F /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		F17181F325C4F533007B5F8F /* Gamemode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Gamemode.swift; sourceTree = "<group>"; };
+		F178BF3025C4FE9B00D521D2 /* Colours.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colours.swift; sourceTree = "<group>"; };
+		F4F299D5F239BFE4BD14F77E /* Pods-Bet Buddy.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Bet Buddy.debug.xcconfig"; path = "Target Support Files/Pods-Bet Buddy/Pods-Bet Buddy.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -33,17 +45,29 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8B320225F04CC9AEDA2DA412 /* Pods_Bet_Buddy.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4428333A6D6CB36626595441 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				F4F299D5F239BFE4BD14F77E /* Pods-Bet Buddy.debug.xcconfig */,
+				03356D0510B47374EE6F853E /* Pods-Bet Buddy.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		F1146FE225BC130600DE677F = {
 			isa = PBXGroup;
 			children = (
 				F1146FED25BC130600DE677F /* Bet Buddy */,
 				F1146FEC25BC130600DE677F /* Products */,
+				4428333A6D6CB36626595441 /* Pods */,
+				F1E413E1842EBC8E316D1D3D /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -58,16 +82,36 @@
 		F1146FED25BC130600DE677F /* Bet Buddy */ = {
 			isa = PBXGroup;
 			children = (
+				F114700625BC9AEE00DE677F /* fonts */,
 				F1146FEE25BC130600DE677F /* AppDelegate.swift */,
 				F1146FF025BC130600DE677F /* SceneDelegate.swift */,
 				F1146FF225BC130600DE677F /* ViewController.swift */,
+				F178BF3025C4FE9B00D521D2 /* Colours.swift */,
+				F17181F325C4F533007B5F8F /* Gamemode.swift */,
 				F1146FF425BC130700DE677F /* Main.storyboard */,
 				F1146FFA25BC130E00DE677F /* Assets.xcassets */,
 				F1146FFC25BC130E00DE677F /* LaunchScreen.storyboard */,
+				F114701E25C3ADA300DE677F /* GoogleService-Info.plist */,
 				F1146FFF25BC130E00DE677F /* Info.plist */,
 				F1146FF725BC130700DE677F /* Bet_Buddy.xcdatamodeld */,
 			);
 			path = "Bet Buddy";
+			sourceTree = "<group>";
+		};
+		F114700625BC9AEE00DE677F /* fonts */ = {
+			isa = PBXGroup;
+			children = (
+				F114700725BC9B1500DE677F /* NTR-Regular.ttf */,
+			);
+			path = fonts;
+			sourceTree = "<group>";
+		};
+		F1E413E1842EBC8E316D1D3D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D9FC8D3864F71DDB86CD6492 /* Pods_Bet_Buddy.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -77,9 +121,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F114700225BC130E00DE677F /* Build configuration list for PBXNativeTarget "Bet Buddy" */;
 			buildPhases = (
+				7B6B0B4A255045E710E69D9B /* [CP] Check Pods Manifest.lock */,
 				F1146FE725BC130600DE677F /* Sources */,
 				F1146FE825BC130600DE677F /* Frameworks */,
 				F1146FE925BC130600DE677F /* Resources */,
+				312C9F21F552ECFA5DB74A44 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -129,11 +175,55 @@
 			files = (
 				F1146FFE25BC130E00DE677F /* LaunchScreen.storyboard in Resources */,
 				F1146FFB25BC130E00DE677F /* Assets.xcassets in Resources */,
+				F114701F25C3ADA300DE677F /* GoogleService-Info.plist in Resources */,
+				F114700825BC9B1500DE677F /* NTR-Regular.ttf in Resources */,
 				F1146FF625BC130700DE677F /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		312C9F21F552ECFA5DB74A44 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Bet Buddy/Pods-Bet Buddy-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Bet Buddy/Pods-Bet Buddy-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Bet Buddy/Pods-Bet Buddy-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		7B6B0B4A255045E710E69D9B /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Bet Buddy-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F1146FE725BC130600DE677F /* Sources */ = {
@@ -141,8 +231,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				F1146FF925BC130700DE677F /* Bet_Buddy.xcdatamodeld in Sources */,
+				F178BF3125C4FE9B00D521D2 /* Colours.swift in Sources */,
 				F1146FF325BC130600DE677F /* ViewController.swift in Sources */,
 				F1146FEF25BC130600DE677F /* AppDelegate.swift in Sources */,
+				F17181F425C4F533007B5F8F /* Gamemode.swift in Sources */,
 				F1146FF125BC130600DE677F /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -287,6 +379,7 @@
 		};
 		F114700325BC130E00DE677F /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F4F299D5F239BFE4BD14F77E /* Pods-Bet Buddy.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -305,6 +398,7 @@
 		};
 		F114700425BC130E00DE677F /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 03356D0510B47374EE6F853E /* Pods-Bet Buddy.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;

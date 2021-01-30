@@ -7,6 +7,38 @@
 
 import UIKit
 import CoreData
+import Firebase
+
+class GamemodeController {
+    
+    // Retrieve all gamemodes from Core Data
+    func retrieveAllGamemodes()->[Gamemode] {
+        var gamemodes:[NSManagedObject] = []
+        var returnGamemodes:[Gamemode] = []
+        
+        let appDelegate = (UIApplication.shared.delegate) as! AppDelegate
+        let context = appDelegate.persistentContainer.viewContext
+        
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "Gamemode")
+        do {
+            gamemodes = try context.fetch(fetchRequest)
+            
+            for g in gamemodes {
+                let newGamemode = Gamemode(
+                    image: g.value(forKey: "graphic") as! UIImage,
+                    name: g.value(forKey: "name") as! String
+                )
+                
+                returnGamemodes.append(newGamemode)
+            }
+            
+        } catch let error as NSError {
+            print("Could not fetch. \(error), \(error.userInfo)")
+        }
+        
+        return returnGamemodes
+    }
+}
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -15,6 +47,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        FirebaseApp.configure()
         return true
     }
 
