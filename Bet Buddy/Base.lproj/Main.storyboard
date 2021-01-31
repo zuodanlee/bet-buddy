@@ -65,6 +65,10 @@
                                                                                     <state key="normal" image="plus.circle" catalog="system">
                                                                                         <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="88"/>
                                                                                     </state>
+                                                                                    <connections>
+                                                                                        <action selector="createRoom:" destination="BYZ-38-t0r" eventType="touchUpInside" id="tf7-Ur-vGQ"/>
+                                                                                        <action selector="createRoom:" destination="GbV-5d-NZe" eventType="touchUpInside" id="xdT-5w-go1"/>
+                                                                                    </connections>
                                                                                 </button>
                                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Host" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QON-ej-I2k">
                                                                                     <rect key="frame" x="0.0" y="100" width="171" height="0.0"/>

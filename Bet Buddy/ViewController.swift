@@ -55,6 +55,13 @@ class ViewController: UIViewController {
         return tempGamemodes
     }
     
+    
+    @IBAction func createRoom(_ sender: Any) {
+        let storyboard = UIStoryboard(name: "CreateRoomBJ", bundle: nil)
+        let vc = storyboard.instantiateViewController(withIdentifier: "CreateRoomBJ") as UIViewController
+        vc.modalPresentationStyle = .fullScreen // try without fullscreen
+        present(vc, animated: true, completion: nil)
+    }
 }
 
 extension ViewController : UITableViewDataSource, UITableViewDelegate {
