@@ -12,6 +12,6 @@ class CreateRoomViewController : UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
+        print("yo wassup")
     }
 }
