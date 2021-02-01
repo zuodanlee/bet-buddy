@@ -22,6 +22,9 @@ class BlackjackViewController : UIViewController {
     var peerID: MCPeerID!
     var mcSession: MCSession!
     var players: [Player] = []
+    var numConnectedPlayers = 1
+    var timer: Timer!
+    var countdown: Int!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,6 +36,12 @@ class BlackjackViewController : UIViewController {
         
         tvPlayers.delegate = self
         tvPlayers.dataSource = self
+        //timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateCounter), userInfo: nil, repeats: true)
+        // report arrival to host
+        if connectivityType == "connected" {
+            print("Reporting arrival...")
+            sendArrived()
+        }
     }
     
     func additionalStyling() {
@@ -49,7 +58,6 @@ class BlackjackViewController : UIViewController {
     }
     
     func hideControls() {
-        print(connectivityType)
         if connectivityType != "host" {
             svHostBottomControls.isHidden = true
         }
@@ -68,22 +76,75 @@ class BlackjackViewController : UIViewController {
         }
     }
     
-    func sendBettingPhase() {
-        
+    @objc func updateBetTimer() {
+        print(countdown!)
+        if countdown > 0 {
+            lblPhase.text = "Betting Phase: \(String(countdown))"
+            countdown -= 1
+        }
+        else if countdown == 0 {
+            lblPhase.text = "Betting Phase Complete"
+            timer.invalidate()
+        }
+    }
+    
+    func startBettingPhase() {
+        sendBettingPhase()
+        startAsyncTimer(phase: "bet")
     }
     
     func processMessage(bbMsg: BBMessage) {
         let msgType = bbMsg.messageType
         
         switch msgType {
-        case "join":
-            return
+        case "arrived-blackjack":
+            if connectivityType == "host" {
+                numConnectedPlayers += 1
+                if numConnectedPlayers == players.count {
+                    startBettingPhase()
+                }
+            }
             
-        case "current-players":
-            return
+        case "phase-bet":
+            if connectivityType == "connected" {
+                countdown = Int(bbMsg.message!) // time in seconds
+                startAsyncTimer(phase: "bet")
+            }
             
         default:
-            print("Unrecognised message.")
+            print("Blackjack.swift: Unrecognised message: [\(msgType)]")
+        }
+    }
+    
+    func sendArrived() {
+        do {
+            print("Sending arrival message...")
+            let bbMessage = BBMessage(messageType: "arrived-blackjack", message: nil, data: nil)
+            let messageData = try JSONEncoder().encode(bbMessage)
+            
+            try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
+        } catch {
+            fatalError("Unable to encode player details.")
+        }
+    }
+    
+    func sendBettingPhase() {
+        do {
+            countdown = 15
+            let bbMessage = BBMessage(messageType: "phase-bet", message: String(countdown), data: nil)
+            let messageData = try JSONEncoder().encode(bbMessage)
+            
+            try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
+        } catch {
+            fatalError("Unable to encode player details.")
+        }
+    }
+    
+    func startAsyncTimer(phase: String) {
+        DispatchQueue.main.async {
+            if phase == "bet" {
+                self.timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(self.updateBetTimer), userInfo: nil, repeats: true)
+            }
         }
     }
 }

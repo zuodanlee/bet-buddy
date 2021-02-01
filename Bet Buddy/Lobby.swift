@@ -162,7 +162,7 @@ class LobbyViewController : UIViewController {
             }
             
         default:
-            print("Unrecognised message.")
+            print("Lobby.swift: Unrecognised message [\(msgType)]")
         }
     }
     
