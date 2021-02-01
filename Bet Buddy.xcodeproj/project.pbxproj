@@ -19,6 +19,7 @@
 		F114701F25C3ADA300DE677F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F114701E25C3ADA300DE677F /* GoogleService-Info.plist */; };
 		F17181F425C4F533007B5F8F /* Gamemode.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17181F325C4F533007B5F8F /* Gamemode.swift */; };
 		F178BF3125C4FE9B00D521D2 /* Colours.swift in Sources */ = {isa = PBXBuildFile; fileRef = F178BF3025C4FE9B00D521D2 /* Colours.swift */; };
+		F1CF123325C790D400571F7A /* Host.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1CF123225C790D400571F7A /* Host.swift */; };
 		F1F84B7725C57CAD0052F6AB /* CreateRoomBJ.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1F84B7625C57CAD0052F6AB /* CreateRoomBJ.swift */; };
 		F1F84B7B25C6ACC20052F6AB /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1F84B7A25C6ACC20052F6AB /* Home.swift */; };
 /* End PBXBuildFile section */
@@ -39,6 +40,7 @@
 		F114701E25C3ADA300DE677F /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		F17181F325C4F533007B5F8F /* Gamemode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Gamemode.swift; sourceTree = "<group>"; };
 		F178BF3025C4FE9B00D521D2 /* Colours.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colours.swift; sourceTree = "<group>"; };
+		F1CF123225C790D400571F7A /* Host.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Host.swift; sourceTree = "<group>"; };
 		F1F84B7625C57CAD0052F6AB /* CreateRoomBJ.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRoomBJ.swift; sourceTree = "<group>"; };
 		F1F84B7A25C6ACC20052F6AB /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
 		F4F299D5F239BFE4BD14F77E /* Pods-Bet Buddy.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Bet Buddy.debug.xcconfig"; path = "Target Support Files/Pods-Bet Buddy/Pods-Bet Buddy.debug.xcconfig"; sourceTree = "<group>"; };
@@ -94,6 +96,7 @@
 				F178BF3025C4FE9B00D521D2 /* Colours.swift */,
 				F17181F325C4F533007B5F8F /* Gamemode.swift */,
 				F1146FF425BC130700DE677F /* Main.storyboard */,
+				F1CF123225C790D400571F7A /* Host.swift */,
 				F1F84B7A25C6ACC20052F6AB /* Home.swift */,
 				F1146FFA25BC130E00DE677F /* Assets.xcassets */,
 				F1146FFC25BC130E00DE677F /* LaunchScreen.storyboard */,
@@ -244,6 +247,7 @@
 				F17181F425C4F533007B5F8F /* Gamemode.swift in Sources */,
 				F1F84B7B25C6ACC20052F6AB /* Home.swift in Sources */,
 				F1146FF125BC130600DE677F /* SceneDelegate.swift in Sources */,
+				F1CF123325C790D400571F7A /* Host.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

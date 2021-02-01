@@ -584,10 +584,10 @@
             </objects>
             <point key="canvasLocation" x="2228" y="919"/>
         </scene>
-        <!--View Controller-->
+        <!--Host View Controller-->
         <scene sceneID="8cM-RH-ycJ">
             <objects>
-                <viewController id="Mc9-y3-VO9" sceneMemberID="viewController">
+                <viewController id="Mc9-y3-VO9" customClass="HostViewController" customModule="Bet_Buddy" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Im7-Fu-agZ">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
