@@ -9,34 +9,27 @@ import UIKit
 import CoreData
 import Firebase
 
-class GamemodeController {
+class PlayerController {
     
     // Retrieve all gamemodes from Core Data
-    func retrieveAllGamemodes()->[Gamemode] {
-        var gamemodes:[NSManagedObject] = []
-        var returnGamemodes:[Gamemode] = []
+    func getCurrentPlayer()->Player {
+        var reqPlayer: Player!
         
-        let appDelegate = (UIApplication.shared.delegate) as! AppDelegate
-        let context = appDelegate.persistentContainer.viewContext
-        
-        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "Gamemode")
-        do {
-            gamemodes = try context.fetch(fetchRequest)
-            
-            for g in gamemodes {
-                let newGamemode = Gamemode(
-                    image: g.value(forKey: "graphic") as! UIImage,
-                    name: g.value(forKey: "name") as! String
-                )
-                
-                returnGamemodes.append(newGamemode)
-            }
-            
-        } catch let error as NSError {
-            print("Could not fetch. \(error), \(error.userInfo)")
+        // if not logged in
+        if true {
+            reqPlayer = Player(name: UIDevice.current.name, title: "Beginner", profilePicture: nil)
         }
         
-        return returnGamemodes
+        return reqPlayer
+    }
+}
+
+class StyleHelper {
+    
+    func roundCorners(views: [UIView]) {
+        for view in views {
+            view.layer.cornerRadius = 8
+        }
     }
 }
 

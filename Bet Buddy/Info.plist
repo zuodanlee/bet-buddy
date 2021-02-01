@@ -62,5 +62,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Bet Buddy uses the local network to connect to the players around you.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_bb-rm._tcp</string>
+	</array>
 </dict>
 </plist>

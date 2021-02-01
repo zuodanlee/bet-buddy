@@ -23,6 +23,7 @@ class HomeViewController : UIViewController {
     @IBOutlet weak var vMahjongFlipped: UIView!
     
     var flipStatuses: [String: Bool] = [ "blackjack": false, "mahjong": false ]
+    var connectivityType = "join"
     
     @IBAction func flipActionBlackjack(_ sender: Any) {
         flipGamemode(gamemodeName: "blackjack")
@@ -31,12 +32,17 @@ class HomeViewController : UIViewController {
     @IBAction func flipActonMahjong(_ sender: Any) {
         flipGamemode(gamemodeName: "mahjong")
     }
+    @IBAction func clickHostBlackjack(_ sender: Any) {
+        connectivityType = "host"
+    }
+    @IBAction func clickJoinBlackjack(_ sender: Any) {
+        connectivityType = "join"
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         additionalStyling()
-        
     }
     
     // set white status bar text
@@ -44,7 +50,18 @@ class HomeViewController : UIViewController {
         return .lightContent
     }
     
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?)
+    {
+        if segue.destination is LobbyViewController
+        {
+            let vc = segue.destination as! LobbyViewController
+            vc.connectivityType = self.connectivityType
+        }
+    }
+    
     func additionalStyling() {
+        
+        let styleHelper = StyleHelper()
         
         // colour
         svAvailable.backgroundColor = Colours.primaryRed
@@ -55,14 +72,8 @@ class HomeViewController : UIViewController {
         vMain.backgroundColor = Colours.backgroundRed
         
         // rounded corners
-        roundCorners(views: [svAvailable, svComingSoon, vBlackjack, vMahjong, ivBlackjack, ivMahjong, vBlackjackFront, vBlackjackFlipped, vMahjongFront, vMahjongFlipped])
+        styleHelper.roundCorners(views: [svAvailable, svComingSoon, vBlackjack, vMahjong, ivBlackjack, ivMahjong, vBlackjackFront, vBlackjackFlipped, vMahjongFront, vMahjongFlipped])
         
-    }
-    
-    func roundCorners(views: [UIView]) {
-        for view in views {
-            view.layer.cornerRadius = 8
-        }
     }
     
     func flipGamemode(gamemodeName: String) {
