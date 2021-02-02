@@ -13,34 +13,122 @@ class BlackjackViewController : UIViewController {
     
     @IBOutlet weak var tvPlayers: UITableView!
     @IBOutlet weak var bStartRound: UIButton!
+    @IBOutlet weak var bEndRound: UIButton!
     @IBOutlet weak var bEndGame: UIButton!
     @IBOutlet weak var svHostBottomControls: UIStackView!
     @IBOutlet weak var bPlaceBet: UIButton!
     @IBOutlet weak var lblPhase: UILabel!
+    @IBAction func placeBet(_ sender: Any) {
+        
+        if connectivityType == "connected" {
+            alertView = UIAlertController(title: "Place Bet",
+                                              message: "Please enter the bet amount.",
+                                              preferredStyle: .alert)
+            alertView.addTextField { (textField: UITextField!) -> Void in
+                textField.placeholder = "1"
+            }
+            alertView.addAction(UIAlertAction(title: "Cancel",
+                                              style: .cancel,
+                                              handler: { (_) in
+                                                self.alertView.dismiss(animated: true, completion: nil)
+            }))
+            alertView.addAction(UIAlertAction(title: "Confirm",
+                                              style: .default,
+                                              handler: { (_) in
+                                                let rawInput = self.alertView.textFields![0].text!
+                                                let roundBet = Double(rawInput)
+                                                if roundBet != nil {
+                                                    let player = self.players[self.playerID]
+                                                    if roundBet! > player.balance! {
+                                                        self.alertView.message = "Insufficient balance!"
+                                                        self.present(self.alertView, animated: true, completion: nil)
+                                                    }
+                                                    else if roundBet! < 0 {
+                                                        self.alertView.message = "Please enter a number more than 0."
+                                                        self.present(self.alertView, animated: true, completion: nil)
+                                                    }
+                                                    else {
+                                                        self.players[self.playerID].roundBet = roundBet
+                                                        for player in self.players {
+                                                            print(player)
+                                                        }
+                                                        self.sendBetChange()
+                                                        self.loadPlayers()
+                                                    }
+                                                }
+                                                else {
+                                                    self.alertView.message = "'\(rawInput)' is not a number."
+                                                    self.present(self.alertView, animated: true, completion: nil)
+                                                }
+            }))
+            self.present(alertView, animated: true, completion: nil)
+        }
+    }
+    @IBAction func endRound(_ sender: Any) {
+        let outcomes = generateOutcomes()
+        payout(outcomes: outcomes)
+        loadPlayers()
+        
+        lblPhase.text = "Payout Phase"
+        sendPayoutPhase()
+        
+        bEndGame.isEnabled = true
+        bEndGame.backgroundColor = Colours.primaryRed
+        bEndRound.isHidden = true
+        bStartRound.isHidden = false
+    }
+    @IBAction func startRound(_ sender: Any) {
+        
+        if connectivityType == "host" {
+            // allow banker to end the round and hide start round
+            bEndRound.isHidden = false
+            bStartRound.isHidden = true
+            
+            startBettingPhase()
+        }
+    }
+    @IBAction func endGame(_ sender: Any) {
+        sendEndGame()
+    }
     
     var connectivityType = "none"
     var peerID: MCPeerID!
     var mcSession: MCSession!
     var players: [Player] = []
+    var playerID: Int = 0
     var numConnectedPlayers = 1
     var timer: Timer!
     var countdown: Int!
+    let startingAmt: Double = 50
+    var player: Player!
+    var isInitialLoad = true
+    var alertView: UIAlertController!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        tvPlayers.delegate = self
+        tvPlayers.dataSource = self
+        
         loadPlayers()
         setupConnectivity()
         additionalStyling()
-        hideControls()
+        initialControlsManipulation()
         
-        tvPlayers.delegate = self
-        tvPlayers.dataSource = self
         //timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateCounter), userInfo: nil, repeats: true)
         // report arrival to host
         if connectivityType == "connected" {
-            print("Reporting arrival...")
             sendArrived()
+        }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        if connectivityType == "host" {
+            let cell = tvPlayers.cellForRow(at: IndexPath(row: 0, section: 0)) as! BlackjackPlayerTableViewCell
+            cell.scOutcome.isEnabled = false
+            cell.scMultiplier.isEnabled = false
         }
     }
     
@@ -50,11 +138,12 @@ class BlackjackViewController : UIViewController {
         
         // colour
         bStartRound.backgroundColor = Colours.primaryRed
+        bEndRound.backgroundColor = Colours.primaryRed
         bEndGame.backgroundColor = Colours.primaryRed
         bPlaceBet.backgroundColor = Colours.primaryRed
         
         // rounded corners
-        styleHelper.roundCorners(views: [bStartRound, bEndGame, bPlaceBet])
+        styleHelper.roundCorners(views: [bStartRound, bEndRound, bEndGame, bPlaceBet])
     }
     
     func hideControls() {
@@ -63,6 +152,28 @@ class BlackjackViewController : UIViewController {
         }
         else {
             bPlaceBet.isHidden = true
+            bStartRound.isHidden = true
+        }
+    }
+    
+    func initialControlsManipulation() {
+        hideControls()
+        
+        if connectivityType == "host" {
+            bEndRound.isEnabled = false
+            bEndGame.isEnabled = false
+            
+            bEndRound.backgroundColor = Colours.disabledRed
+            bEndGame.backgroundColor = Colours.disabledRed
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        if segue.destination is HomeViewController
+        {
+            let vc = segue.destination as! HomeViewController
+            vc.mcSession = self.mcSession
         }
     }
     
@@ -71,6 +182,17 @@ class BlackjackViewController : UIViewController {
     }
     
     func loadPlayers() {
+        if isInitialLoad {
+            for i in 0...players.count-1 {
+                players[i].playerID = players.count-1
+                players[i].balance = startingAmt
+                players[i].roundBet = 0
+            }
+            
+            player = players[playerID]
+            isInitialLoad = false
+        }
+        
         DispatchQueue.main.async {
             self.tvPlayers.reloadData()
         }
@@ -83,14 +205,68 @@ class BlackjackViewController : UIViewController {
             countdown -= 1
         }
         else if countdown == 0 {
-            lblPhase.text = "Betting Phase Complete"
             timer.invalidate()
+            bEndRound.isEnabled = true // allow banker to start the round
+            bEndRound.backgroundColor = Colours.primaryRed
+            
+            bPlaceBet.isEnabled = false // stop players from changing bets
+            bPlaceBet.backgroundColor = Colours.disabledRed
+            
+            if connectivityType == "host" {
+                sendPlayPhase()
+                lblPhase.text = "Play Phase"
+            }
+            else {
+                if alertView != nil {
+                    alertView.dismiss(animated: true, completion: nil)
+                }
+            }
         }
     }
     
     func startBettingPhase() {
         sendBettingPhase()
         startAsyncTimer(phase: "bet")
+        bEndRound.backgroundColor = Colours.disabledRed
+    }
+    
+    func generateOutcomes() -> [BlackjackOutcome] {
+        var outcomes: [BlackjackOutcome] = []
+        for i in 0...players.count-1 {
+            let cell = tvPlayers.cellForRow(at: IndexPath(row: i, section: 0)) as! BlackjackPlayerTableViewCell
+            let player = players[i]
+            
+            var didBankerWin = true
+            if cell.scOutcome.selectedSegmentIndex == 1 {
+                didBankerWin = false
+            }
+            
+            var multiplier = 1
+            if cell.scMultiplier.selectedSegmentIndex == 1 {
+                multiplier = 2
+            }
+            else if cell.scMultiplier.selectedSegmentIndex == 2 {
+                multiplier = 3
+            }
+            else if cell.scMultiplier.selectedSegmentIndex == 3 {
+                multiplier = 7
+            }
+            
+            var newOutcome = BlackjackOutcome(playerID: player.playerID!, roundBet: player.roundBet!, didBankerWin: didBankerWin, multiplier: multiplier)
+            
+            newOutcome.payout = newOutcome.calculatePayout()
+            
+            outcomes.append(newOutcome)
+        }
+        
+        return outcomes
+    }
+    
+    func payout(outcomes: [BlackjackOutcome]) {
+        for i in 1...players.count-1 {
+            players[i].balance! += outcomes[i].payout!
+            players[0].balance! -= outcomes[i].payout!
+        }
     }
     
     func processMessage(bbMsg: BBMessage) {
@@ -109,6 +285,46 @@ class BlackjackViewController : UIViewController {
             if connectivityType == "connected" {
                 countdown = Int(bbMsg.message!) // time in seconds
                 startAsyncTimer(phase: "bet")
+                DispatchQueue.main.async {
+                    self.bPlaceBet.isEnabled = true
+                    self.bPlaceBet.backgroundColor = Colours.primaryRed
+                }
+            }
+            
+        case "bet-change":
+            do {
+                let currentPlayers = try JSONDecoder().decode([Player].self, from: bbMsg.data!)
+                players = currentPlayers
+                
+                loadPlayers()
+            } catch {
+                fatalError("Unable to process the received data.")
+            }
+            
+        case "phase-play":
+            DispatchQueue.main.async {
+                self.lblPhase.text = "Play Phase"
+            }
+            
+        case "phase-payout":
+            do {
+                let currentPlayers = try JSONDecoder().decode([Player].self, from: bbMsg.data!)
+                players = currentPlayers
+                
+                DispatchQueue.main.async {
+                    self.lblPhase.text = "Payout Phase"
+                }
+                
+                loadPlayers()
+            } catch {
+                fatalError("Unable to process the received data.")
+            }
+            
+        case "end-game":
+            if connectivityType == "connected" {
+                DispatchQueue.main.async {
+                    self.performSegue(withIdentifier: "endBlackjack", sender: self)
+                }
             }
             
         default:
@@ -132,6 +348,52 @@ class BlackjackViewController : UIViewController {
         do {
             countdown = 15
             let bbMessage = BBMessage(messageType: "phase-bet", message: String(countdown), data: nil)
+            let messageData = try JSONEncoder().encode(bbMessage)
+            
+            try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
+        } catch {
+            fatalError("Unable to encode player details.")
+        }
+    }
+    
+    func sendBetChange() {
+        do {
+            let currentPlayersData = try JSONEncoder().encode(players)
+            let bbMessage = BBMessage(messageType: "bet-change", message: nil, data: currentPlayersData)
+            let messageData = try JSONEncoder().encode(bbMessage)
+            
+            try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
+        } catch {
+            fatalError("Unable to encode player details.")
+        }
+    }
+    
+    func sendPlayPhase() {
+        do {
+            let bbMessage = BBMessage(messageType: "phase-play", message: nil, data: nil)
+            let messageData = try JSONEncoder().encode(bbMessage)
+            
+            try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
+        } catch {
+            fatalError("Unable to encode player details.")
+        }
+    }
+    
+    func sendPayoutPhase() {
+        do {
+            let currentPlayersData = try JSONEncoder().encode(players)
+            let bbMessage = BBMessage(messageType: "phase-payout", message: nil, data: currentPlayersData)
+            let messageData = try JSONEncoder().encode(bbMessage)
+            
+            try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
+        } catch {
+            fatalError("Unable to encode player details.")
+        }
+    }
+    
+    func sendEndGame() {
+        do {
+            let bbMessage = BBMessage(messageType: "end-game", message: nil, data: nil)
             let messageData = try JSONEncoder().encode(bbMessage)
             
             try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
@@ -209,6 +471,23 @@ extension BlackjackViewController : UITableViewDataSource, UITableViewDelegate {
             //cell.ivPlayerProfilePicture.image = player.profilePicture
             
         }
+        cell.lblBalance.text = "Balance: $\(player.balance!)"
+        cell.lblRoundBet.text = "Round Bet: $\(player.roundBet!)"
+        cell.scOutcome.selectedSegmentIndex = 0
+        cell.scMultiplier.selectedSegmentIndex = 0
+        cell.selectionStyle = .none
+        if indexPath.row != 0 {
+            cell.svHostBanner.isHidden = true
+        }
+        else {
+            cell.svHostBanner.backgroundColor = Colours.tintRed
+            cell.svHostBanner.layer.cornerRadius = 8
+        }
+        
+        if connectivityType != "host" {
+            cell.scOutcome.isEnabled = false
+            cell.scMultiplier.isEnabled = false
+        }
         
         return cell
     }
@@ -219,4 +498,10 @@ class BlackjackPlayerTableViewCell : UITableViewCell {
     @IBOutlet weak var lblPlayerName: UILabel!
     @IBOutlet weak var lblPlayerTitle: UILabel!
     @IBOutlet weak var ivPlayerProfilePicture: UIImageView!
+    @IBOutlet weak var lblBalance: UILabel!
+    @IBOutlet weak var lblRoundBet: UILabel!
+    @IBOutlet weak var scOutcome: UISegmentedControl!
+    @IBOutlet weak var scMultiplier: UISegmentedControl!
+    @IBOutlet weak var svHostBanner: UIStackView!
+    
 }

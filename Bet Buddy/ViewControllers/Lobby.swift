@@ -16,13 +16,15 @@ class LobbyViewController : UIViewController {
     @IBOutlet weak var bStartGame: UIButton!
     
     @IBAction func sendStartGame(_ sender: Any) {
-        do {
-            let bbMessage = BBMessage(messageType: "start-game", message: nil, data: nil)
-            let messageData = try JSONEncoder().encode(bbMessage)
-            
-            try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
-        } catch {
-            fatalError("Unable to encode player details.")
+        if players.count > 1 {
+            do {
+                let bbMessage = BBMessage(messageType: "start-game", message: nil, data: nil)
+                let messageData = try JSONEncoder().encode(bbMessage)
+                
+                try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
+            } catch {
+                fatalError("Unable to encode player details.")
+            }
         }
     }
     
@@ -31,13 +33,16 @@ class LobbyViewController : UIViewController {
     var mcSession: MCSession!
     var nearbyServiceAdvertiser: MCNearbyServiceAdvertiser!
     var players: [Player] = []
+    var playerID: Int!
     let playerController = PlayerController()
+    var receivedPlayerID = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         if connectivityType == "host" {
             lblConnectivityType.text = "Blackjack Host"
+            playerID = 0
             loadData()
         }
         else if connectivityType == "join" {
@@ -98,17 +103,50 @@ class LobbyViewController : UIViewController {
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
         if segue.destination is BlackjackViewController
         {
+            assignPlayerID()
+            
             let vc = segue.destination as! BlackjackViewController
             vc.connectivityType = self.connectivityType
             vc.peerID = self.peerID
             vc.mcSession = self.mcSession
             vc.players = self.players
+            vc.playerID = self.playerID
+            
+            if nearbyServiceAdvertiser != nil {
+                nearbyServiceAdvertiser.stopAdvertisingPeer()
+            }
         }
     }
     
+    override func shouldPerformSegue(withIdentifier identifier: String?, sender: Any?) -> Bool {
+        if let ident = identifier {
+            if ident == "startBlackjack" {
+                if players.count < 2 {
+                    let alertView = UIAlertController(title: "Please wait for others to join.",
+                                                      message: "Trying to play Blackjack by yourself?",
+                                                      preferredStyle: .alert)
+                    alertView.addAction(UIAlertAction(title: "OK",
+                                                      style: .default,
+                                                      handler: { (_) in
+                                                        alertView.dismiss(animated: true, completion: nil)
+                    }))
+                    self.present(alertView, animated: true, completion: nil)
+                    
+                    return false
+                }
+            }
+        }
+        return true
+    }
+    
+    func assignPlayerID() {
+        for i in 0...players.count-1 {
+            players[i].playerID = i
+        }
+    }
+        
     func hostRoom() {
         self.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(peer: peerID, discoveryInfo: nil, serviceType: "bb-rm")
         nearbyServiceAdvertiser.delegate = self
@@ -146,6 +184,11 @@ class LobbyViewController : UIViewController {
             do {
                 let currentPlayers = try JSONDecoder().decode([Player].self, from: bbMsg.data!)
                 players = currentPlayers
+                
+                if !receivedPlayerID {
+                    playerID = Int(bbMsg.message!)
+                    receivedPlayerID = true
+                }
                 
                 DispatchQueue.main.async {
                     self.tvPlayers.reloadData()
@@ -188,7 +231,7 @@ class LobbyViewController : UIViewController {
     func sendCurrentPlayers() {
         do {
             let currentPlayersData = try JSONEncoder().encode(players)
-            let bbMessage = BBMessage(messageType: "current-players", message: nil, data: currentPlayersData)
+            let bbMessage = BBMessage(messageType: "current-players", message: String(players.count-1), data: currentPlayersData)
             let messageData = try JSONEncoder().encode(bbMessage)
             
             try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
