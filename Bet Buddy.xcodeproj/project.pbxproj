@@ -11,6 +11,7 @@
 		40C8AF3125C953090031095B /* DataBaseHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C8AF3025C953090031095B /* DataBaseHelper.swift */; };
 		40C8AF3525C96BB50031095B /* Downloads in Resources */ = {isa = PBXBuildFile; fileRef = 40C8AF3425C96BB50031095B /* Downloads */; };
 		8B320225F04CC9AEDA2DA412 /* Pods_Bet_Buddy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9FC8D3864F71DDB86CD6492 /* Pods_Bet_Buddy.framework */; };
+		F105F00D25C9734200046D5E /* BlackjackOutcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = F105F00C25C9734200046D5E /* BlackjackOutcome.swift */; };
 		F1146FEF25BC130600DE677F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1146FEE25BC130600DE677F /* AppDelegate.swift */; };
 		F1146FF125BC130600DE677F /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1146FF025BC130600DE677F /* SceneDelegate.swift */; };
 		F1146FF925BC130700DE677F /* Bet_Buddy.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = F1146FF725BC130700DE677F /* Bet_Buddy.xcdatamodeld */; };
@@ -35,6 +36,7 @@
 		40C8AF3025C953090031095B /* DataBaseHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DataBaseHelper.swift; path = ViewControllers/DataBaseHelper.swift; sourceTree = "<group>"; };
 		40C8AF3425C96BB50031095B /* Downloads */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Downloads; path = ../../../../Downloads; sourceTree = "<group>"; };
 		D9FC8D3864F71DDB86CD6492 /* Pods_Bet_Buddy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Bet_Buddy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F105F00C25C9734200046D5E /* BlackjackOutcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BlackjackOutcome.swift; path = ../BlackjackOutcome.swift; sourceTree = "<group>"; };
 		F1146FEB25BC130600DE677F /* Bet Buddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Bet Buddy.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1146FEE25BC130600DE677F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F1146FF025BC130600DE677F /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -99,6 +101,14 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
+		F105F00925C9726800046D5E /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				F196E6D125C8D5F0008DB308 /* BlackjackOutcome.swift */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		F1146FE225BC130600DE677F = {
 			isa = PBXGroup;
 			children = (
@@ -106,6 +116,7 @@
 				F1146FEC25BC130600DE677F /* Products */,
 				4428333A6D6CB36626595441 /* Pods */,
 				F1E413E1842EBC8E316D1D3D /* Frameworks */,
+				F105F00925C9726800046D5E /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -124,6 +135,7 @@
 				40C8AF0825C8EC440031095B /* Objects */,
 				40C8AF0725C8EB350031095B /* ViewControllers */,
 				F1146FEE25BC130600DE677F /* AppDelegate.swift */,
+				F105F00C25C9734200046D5E /* BlackjackOutcome.swift */,
 				F1146FF025BC130600DE677F /* SceneDelegate.swift */,
 				F16D4B1325C7A8BE00F921F8 /* Main.storyboard */,
 				40C8AF3025C953090031095B /* DataBaseHelper.swift */,
@@ -278,6 +290,7 @@
 				40C8AF3125C953090031095B /* DataBaseHelper.swift in Sources */,
 				F17181F425C4F533007B5F8F /* Gamemode.swift in Sources */,
 				F196E6D225C8D5F0008DB308 /* BlackjackOutcome.swift in Sources */,
+				F105F00D25C9734200046D5E /* BlackjackOutcome.swift in Sources */,
 				F1F84B7B25C6ACC20052F6AB /* Home.swift in Sources */,
 				40C8AF1525C9117E0031095B /* ProfileViewController.swift in Sources */,
 				F194B03B25C891C90035AD9E /* Blackjack.swift in Sources */,
