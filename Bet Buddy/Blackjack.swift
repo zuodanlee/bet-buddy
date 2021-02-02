@@ -49,6 +49,9 @@ class BlackjackViewController : UIViewController {
                                                     }
                                                     else {
                                                         self.players[self.playerID].roundBet = roundBet
+                                                        for player in self.players {
+                                                            print(player)
+                                                        }
                                                         self.sendBetChange()
                                                         self.loadPlayers()
                                                     }
@@ -92,7 +95,7 @@ class BlackjackViewController : UIViewController {
     var peerID: MCPeerID!
     var mcSession: MCSession!
     var players: [Player] = []
-    var playerID: Int!
+    var playerID: Int = 0
     var numConnectedPlayers = 1
     var timer: Timer!
     var countdown: Int!

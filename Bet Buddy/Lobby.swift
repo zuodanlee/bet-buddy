@@ -35,6 +35,7 @@ class LobbyViewController : UIViewController {
     var players: [Player] = []
     var playerID: Int!
     let playerController = PlayerController()
+    var receivedPlayerID = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -104,6 +105,8 @@ class LobbyViewController : UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.destination is BlackjackViewController
         {
+            assignPlayerID()
+            
             let vc = segue.destination as! BlackjackViewController
             vc.connectivityType = self.connectivityType
             vc.peerID = self.peerID
@@ -136,6 +139,12 @@ class LobbyViewController : UIViewController {
             }
         }
         return true
+    }
+    
+    func assignPlayerID() {
+        for i in 0...players.count-1 {
+            players[i].playerID = i
+        }
     }
         
     func hostRoom() {
@@ -176,7 +185,10 @@ class LobbyViewController : UIViewController {
                 let currentPlayers = try JSONDecoder().decode([Player].self, from: bbMsg.data!)
                 players = currentPlayers
                 
-                playerID = Int(bbMsg.message!)
+                if !receivedPlayerID {
+                    playerID = Int(bbMsg.message!)
+                    receivedPlayerID = true
+                }
                 
                 DispatchQueue.main.async {
                     self.tvPlayers.reloadData()
