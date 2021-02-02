@@ -43,6 +43,10 @@ class BlackjackViewController : UIViewController {
                                                         self.alertView.message = "Insufficient balance!"
                                                         self.present(self.alertView, animated: true, completion: nil)
                                                     }
+                                                    else if roundBet! < 0 {
+                                                        self.alertView.message = "Please enter a number more than 0."
+                                                        self.present(self.alertView, animated: true, completion: nil)
+                                                    }
                                                     else {
                                                         self.players[self.playerID].roundBet = roundBet
                                                         self.sendBetChange()
