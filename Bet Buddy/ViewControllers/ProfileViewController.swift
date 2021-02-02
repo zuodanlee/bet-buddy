@@ -17,8 +17,10 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate ,UINavig
         
         styling()
         
-        let profilepic = DataBaseHelper().getProfile()?.image!
-        imageView.image = UIImage(data: profilepic!)
+        let profilepic = DataBaseHelper().getProfile()?.image
+        if profilepic != nil {
+            imageView.image = UIImage(data: profilepic!)
+        }
         
         imagePicker.delegate = self
         imagePicker.sourceType = .savedPhotosAlbum
