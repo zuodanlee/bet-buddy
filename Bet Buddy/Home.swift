@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import MultipeerConnectivity
 
 class HomeViewController : UIViewController {
     
@@ -24,6 +25,7 @@ class HomeViewController : UIViewController {
     
     var flipStatuses: [String: Bool] = [ "blackjack": false, "mahjong": false ]
     var connectivityType = "join"
+    var mcSession: MCSession? = nil
     
     @IBAction func flipActionBlackjack(_ sender: Any) {
         flipGamemode(gamemodeName: "blackjack")
@@ -42,6 +44,10 @@ class HomeViewController : UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        if mcSession != nil {
+            print("lol")
+            mcSession?.disconnect()
+        }
         additionalStyling()
     }
     

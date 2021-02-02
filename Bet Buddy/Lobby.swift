@@ -109,6 +109,10 @@ class LobbyViewController : UIViewController {
             vc.mcSession = self.mcSession
             vc.players = self.players
             vc.playerID = self.playerID
+            
+            if nearbyServiceAdvertiser != nil {
+                nearbyServiceAdvertiser.stopAdvertisingPeer()
+            }
         }
     }
     
