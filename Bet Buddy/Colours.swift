@@ -10,6 +10,7 @@ import UIKit
 
 class Colours {
     static let primaryRed = UIColor(red: 1.0, green: 98/255.0, blue: 98/255.0, alpha: 1.0)
+    static let disabledRed = UIColor(red: 1.0, green: 128/255.0, blue: 128/255.0, alpha: 1.0)
     static let tintRed = UIColor(red: 228/255.0, green: 84/255.0, blue: 84/255.0, alpha: 1.0)
     static let backgroundRed = UIColor(red: 29/255.0, green: 3/255.0, blue: 3/255.0, alpha: 1.0)
     static let white = UIColor.white

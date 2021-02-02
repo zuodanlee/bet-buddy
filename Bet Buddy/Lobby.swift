@@ -31,6 +31,7 @@ class LobbyViewController : UIViewController {
     var mcSession: MCSession!
     var nearbyServiceAdvertiser: MCNearbyServiceAdvertiser!
     var players: [Player] = []
+    var playerID: Int!
     let playerController = PlayerController()
     
     override func viewDidLoad() {
@@ -38,6 +39,7 @@ class LobbyViewController : UIViewController {
         
         if connectivityType == "host" {
             lblConnectivityType.text = "Blackjack Host"
+            playerID = 0
             loadData()
         }
         else if connectivityType == "join" {
@@ -106,6 +108,7 @@ class LobbyViewController : UIViewController {
             vc.peerID = self.peerID
             vc.mcSession = self.mcSession
             vc.players = self.players
+            vc.playerID = self.playerID
         }
     }
     
@@ -146,6 +149,8 @@ class LobbyViewController : UIViewController {
             do {
                 let currentPlayers = try JSONDecoder().decode([Player].self, from: bbMsg.data!)
                 players = currentPlayers
+                
+                playerID = Int(bbMsg.message!)
                 
                 DispatchQueue.main.async {
                     self.tvPlayers.reloadData()
@@ -188,7 +193,7 @@ class LobbyViewController : UIViewController {
     func sendCurrentPlayers() {
         do {
             let currentPlayersData = try JSONEncoder().encode(players)
-            let bbMessage = BBMessage(messageType: "current-players", message: nil, data: currentPlayersData)
+            let bbMessage = BBMessage(messageType: "current-players", message: String(players.count-1), data: currentPlayersData)
             let messageData = try JSONEncoder().encode(bbMessage)
             
             try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
