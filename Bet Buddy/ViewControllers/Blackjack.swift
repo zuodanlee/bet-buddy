@@ -49,6 +49,7 @@ class BlackjackViewController : UIViewController {
                                                     }
                                                     else {
                                                         self.players[self.playerID].roundBet = roundBet
+                                                        print(self.playerID)
                                                         for player in self.players {
                                                             print(player)
                                                         }
@@ -98,7 +99,7 @@ class BlackjackViewController : UIViewController {
     var playerID: Int = 0
     var numConnectedPlayers = 1
     var timer: Timer!
-    var countdown: Int!
+    var countdown = 30
     let startingAmt: Double = 50
     var player: Player!
     var isInitialLoad = true
@@ -184,7 +185,7 @@ class BlackjackViewController : UIViewController {
     func loadPlayers() {
         if isInitialLoad {
             for i in 0...players.count-1 {
-                players[i].playerID = players.count-1
+                players[i].playerID = i
                 players[i].balance = startingAmt
                 players[i].roundBet = 0
             }
@@ -199,7 +200,6 @@ class BlackjackViewController : UIViewController {
     }
     
     @objc func updateBetTimer() {
-        print(countdown!)
         if countdown > 0 {
             lblPhase.text = "Betting Phase: \(String(countdown))"
             countdown -= 1
@@ -283,7 +283,7 @@ class BlackjackViewController : UIViewController {
             
         case "phase-bet":
             if connectivityType == "connected" {
-                countdown = Int(bbMsg.message!) // time in seconds
+                countdown = Int(bbMsg.message!)! // time in seconds
                 startAsyncTimer(phase: "bet")
                 DispatchQueue.main.async {
                     self.bPlaceBet.isEnabled = true
@@ -346,7 +346,6 @@ class BlackjackViewController : UIViewController {
     
     func sendBettingPhase() {
         do {
-            countdown = 15
             let bbMessage = BBMessage(messageType: "phase-bet", message: String(countdown), data: nil)
             let messageData = try JSONEncoder().encode(bbMessage)
             
