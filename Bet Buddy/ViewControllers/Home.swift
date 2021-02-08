@@ -45,7 +45,6 @@ class HomeViewController : UIViewController {
         super.viewDidLoad()
         
         if mcSession != nil {
-            print("lol")
             mcSession?.disconnect()
         }
         additionalStyling()

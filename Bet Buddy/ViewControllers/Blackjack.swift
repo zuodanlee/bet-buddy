@@ -108,25 +108,15 @@ class BlackjackViewController : UIViewController {
         tvPlayers.delegate = self
         tvPlayers.dataSource = self
         
+        initOutcomes()
         loadPlayers()
         setupConnectivity()
         additionalStyling()
         initialControlsManipulation()
         
-        //timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateCounter), userInfo: nil, repeats: true)
         // report arrival to host
         if connectivityType == "connected" {
             sendArrived()
-        }
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        
-        if connectivityType == "host" {
-            let cell = tvPlayers.cellForRow(at: IndexPath(row: 0, section: 0)) as! BlackjackPlayerTableViewCell
-            cell.scOutcome.isEnabled = false
-            cell.scMultiplier.isEnabled = false
         }
     }
     
@@ -238,6 +228,13 @@ class BlackjackViewController : UIViewController {
             
             appDelegate.players[i].balance! += player.payout!
             appDelegate.players[0].balance! -= player.payout!
+        }
+    }
+    
+    func initOutcomes() {
+        for i in 0...appDelegate.players.count-1 {
+            appDelegate.players[i].outcomeIndex = 0
+            appDelegate.players[i].multiplier = 1
         }
     }
     
@@ -443,13 +440,25 @@ extension BlackjackViewController : UITableViewDataSource, UITableViewDelegate {
         }
         cell.lblBalance.text = "$\(String(format: "%.2f", player.balance!))"
         cell.lblRoundBet.text = "$\(String(format: "%.2f", player.roundBet!))"
-        cell.scOutcome.selectedSegmentIndex = 0
-        cell.scMultiplier.selectedSegmentIndex = 0
+        cell.scOutcome.selectedSegmentIndex = player.outcomeIndex!
+        if player.multiplier == 1 {
+            cell.scMultiplier.selectedSegmentIndex = 0
+        }
+        else if player.multiplier == 2 {
+            cell.scMultiplier.selectedSegmentIndex = 1
+        }
+        else if player.multiplier == 3 {
+            cell.scMultiplier.selectedSegmentIndex = 2
+        }
+        else if player.multiplier == 7 {
+            cell.scMultiplier.selectedSegmentIndex = 3
+        }
         cell.selectionStyle = .none
         if indexPath.row != 0 {
             cell.svHostBanner.isHidden = true
         }
         else {
+            cell.svHostBanner.isHidden = false
             cell.svHostBanner.backgroundColor = Colours.tintRed
             cell.svHostBanner.layer.cornerRadius = 8
         }
@@ -502,6 +511,9 @@ class BlackjackPlayerTableViewCell : UITableViewCell {
     weak var delegate: BlackjackPlayerTableViewCellDelegate?
     
     @IBAction func changeOutcome(_ sender: Any) {
+        delegate?.scChangeValue(cell: self)
+    }
+    @IBAction func changeMultiplier(_ sender: Any) {
         delegate?.scChangeValue(cell: self)
     }
 }

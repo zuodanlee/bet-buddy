@@ -749,6 +749,9 @@
                                                                 <segment title="3x"/>
                                                                 <segment title="7x"/>
                                                             </segments>
+                                                            <connections>
+                                                                <action selector="changeMultiplier:" destination="lLS-7S-reD" eventType="valueChanged" id="8p4-1c-y4i"/>
+                                                            </connections>
                                                         </segmentedControl>
                                                     </subviews>
                                                     <constraints>
