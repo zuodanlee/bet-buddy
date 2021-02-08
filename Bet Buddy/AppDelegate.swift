@@ -17,7 +17,7 @@ class PlayerController {
         
         // if not logged in
         if true {
-            reqPlayer = Player(name: UIDevice.current.name, title: "Beginner", profilePicture: nil)
+            reqPlayer = Player(name: UIDevice.current.name, title: "Beginner", profilePicture: nil, initialBalance: 50)
         }
         
         return reqPlayer
@@ -36,7 +36,7 @@ class StyleHelper {
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-
+    var players: [Player] = []
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.

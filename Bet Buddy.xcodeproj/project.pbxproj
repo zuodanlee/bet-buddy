@@ -11,7 +11,6 @@
 		40C8AF3125C953090031095B /* DataBaseHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C8AF3025C953090031095B /* DataBaseHelper.swift */; };
 		40C8AF3525C96BB50031095B /* Downloads in Resources */ = {isa = PBXBuildFile; fileRef = 40C8AF3425C96BB50031095B /* Downloads */; };
 		8B320225F04CC9AEDA2DA412 /* Pods_Bet_Buddy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9FC8D3864F71DDB86CD6492 /* Pods_Bet_Buddy.framework */; };
-		F105F00D25C9734200046D5E /* BlackjackOutcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = F105F00C25C9734200046D5E /* BlackjackOutcome.swift */; };
 		F1146FEF25BC130600DE677F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1146FEE25BC130600DE677F /* AppDelegate.swift */; };
 		F1146FF125BC130600DE677F /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1146FF025BC130600DE677F /* SceneDelegate.swift */; };
 		F1146FF925BC130700DE677F /* Bet_Buddy.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = F1146FF725BC130700DE677F /* Bet_Buddy.xcdatamodeld */; };
@@ -24,7 +23,6 @@
 		F178BF3125C4FE9B00D521D2 /* Colours.swift in Sources */ = {isa = PBXBuildFile; fileRef = F178BF3025C4FE9B00D521D2 /* Colours.swift */; };
 		F194B03825C86CFB0035AD9E /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = F194B03725C86CFB0035AD9E /* Player.swift */; };
 		F194B03B25C891C90035AD9E /* Blackjack.swift in Sources */ = {isa = PBXBuildFile; fileRef = F194B03A25C891C90035AD9E /* Blackjack.swift */; };
-		F196E6D225C8D5F0008DB308 /* BlackjackOutcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = F196E6D125C8D5F0008DB308 /* BlackjackOutcome.swift */; };
 		F1CF123325C790D400571F7A /* Lobby.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1CF123225C790D400571F7A /* Lobby.swift */; };
 		F1D8421B25C8489A00120475 /* BBMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D8421A25C8489A00120475 /* BBMessage.swift */; };
 		F1F84B7B25C6ACC20052F6AB /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1F84B7A25C6ACC20052F6AB /* Home.swift */; };
@@ -36,7 +34,6 @@
 		40C8AF3025C953090031095B /* DataBaseHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DataBaseHelper.swift; path = ViewControllers/DataBaseHelper.swift; sourceTree = "<group>"; };
 		40C8AF3425C96BB50031095B /* Downloads */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Downloads; path = ../../../../Downloads; sourceTree = "<group>"; };
 		D9FC8D3864F71DDB86CD6492 /* Pods_Bet_Buddy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Bet_Buddy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		F105F00C25C9734200046D5E /* BlackjackOutcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BlackjackOutcome.swift; path = ../BlackjackOutcome.swift; sourceTree = "<group>"; };
 		F1146FEB25BC130600DE677F /* Bet Buddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Bet Buddy.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1146FEE25BC130600DE677F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F1146FF025BC130600DE677F /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -135,7 +132,6 @@
 				40C8AF0825C8EC440031095B /* Objects */,
 				40C8AF0725C8EB350031095B /* ViewControllers */,
 				F1146FEE25BC130600DE677F /* AppDelegate.swift */,
-				F105F00C25C9734200046D5E /* BlackjackOutcome.swift */,
 				F1146FF025BC130600DE677F /* SceneDelegate.swift */,
 				F16D4B1325C7A8BE00F921F8 /* Main.storyboard */,
 				40C8AF3025C953090031095B /* DataBaseHelper.swift */,
@@ -289,8 +285,6 @@
 				F1146FEF25BC130600DE677F /* AppDelegate.swift in Sources */,
 				40C8AF3125C953090031095B /* DataBaseHelper.swift in Sources */,
 				F17181F425C4F533007B5F8F /* Gamemode.swift in Sources */,
-				F196E6D225C8D5F0008DB308 /* BlackjackOutcome.swift in Sources */,
-				F105F00D25C9734200046D5E /* BlackjackOutcome.swift in Sources */,
 				F1F84B7B25C6ACC20052F6AB /* Home.swift in Sources */,
 				40C8AF1525C9117E0031095B /* ProfileViewController.swift in Sources */,
 				F194B03B25C891C90035AD9E /* Blackjack.swift in Sources */,

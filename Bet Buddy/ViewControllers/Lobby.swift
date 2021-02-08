@@ -14,16 +14,78 @@ class LobbyViewController : UIViewController {
     @IBOutlet weak var lblConnectivityType: UILabel!
     @IBOutlet weak var tvPlayers: UITableView!
     @IBOutlet weak var bStartGame: UIButton!
+    @IBOutlet weak var bReady: UIButton!
+    @IBOutlet weak var bCancel: UIButton!
+    @IBOutlet weak var bAdjustBalance: UIButton!
     
+    @IBAction func adjustBalance(_ sender: Any) {
+        if connectivityType == "connected" || connectivityType == "host" {
+            let alertView = UIAlertController(title: "Adjust Starting Balance",
+                                              message: "Please enter your desired amount.",
+                                              preferredStyle: .alert)
+            alertView.addTextField { (textField: UITextField!) -> Void in
+                textField.placeholder = "1"
+            }
+            alertView.addAction(UIAlertAction(title: "Cancel",
+                                              style: .cancel,
+                                              handler: { (_) in
+                                                alertView.dismiss(animated: true, completion: nil)
+            }))
+            alertView.addAction(UIAlertAction(title: "Confirm",
+                                              style: .default,
+                                              handler: { (_) in
+                                                let rawInput = alertView.textFields![0].text!
+                                                var startBal = Double(rawInput)
+                                                if startBal != nil {
+                                                    if startBal! < 0 {
+                                                        alertView.message = "Please enter a number more than 0."
+                                                        self.present(alertView, animated: true, completion: nil)
+                                                    }
+                                                    else {
+                                                        // valid input - proceed with starting balance change
+                                                        startBal = Double(String(format: "%.2f", startBal!)) // round starting balance to 2dp
+                                                        self.appDelegate.players[self.playerID].initialBalance = startBal
+                                                        self.sendCurrentPlayers()
+                                                        self.loadData()
+                                                    }
+                                                }
+                                                else {
+                                                    alertView.message = "'\(rawInput)' is not a number."
+                                                    self.present(alertView, animated: true, completion: nil)
+                                                }
+            }))
+            self.present(alertView, animated: true, completion: nil)
+        }
+    }
+    @IBAction func sendReady(_ sender: Any) {
+        if connectivityType == "connected" {
+            appDelegate.players[playerID].isReady = true
+            sendCurrentPlayers()
+            playerReadyStyle(isReady: true)
+            
+            loadData()
+        }
+    }
+    @IBAction func sendCancel(_ sender: Any) {
+        if connectivityType == "connected" {
+            appDelegate.players[playerID].isReady = false
+            sendCurrentPlayers()
+            playerReadyStyle(isReady: false)
+            
+            loadData()
+        }
+    }
     @IBAction func sendStartGame(_ sender: Any) {
-        if players.count > 1 {
-            do {
-                let bbMessage = BBMessage(messageType: "start-game", message: nil, data: nil)
-                let messageData = try JSONEncoder().encode(bbMessage)
-                
-                try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
-            } catch {
-                fatalError("Unable to encode player details.")
+        if appDelegate.players.count > 1 {
+            if allPlayersReady() {
+                do {
+                    let bbMessage = BBMessage(messageType: "start-game", message: nil, data: nil)
+                    let messageData = try JSONEncoder().encode(bbMessage)
+                    
+                    try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
+                } catch {
+                    fatalError("Unable to encode player details.")
+                }
             }
         }
     }
@@ -32,7 +94,7 @@ class LobbyViewController : UIViewController {
     var peerID: MCPeerID!
     var mcSession: MCSession!
     var nearbyServiceAdvertiser: MCNearbyServiceAdvertiser!
-    var players: [Player] = []
+    var appDelegate = UIApplication.shared.delegate as! AppDelegate
     var playerID: Int!
     let playerController = PlayerController()
     var receivedPlayerID = false
@@ -74,14 +136,23 @@ class LobbyViewController : UIViewController {
         
         // colour
         bStartGame.backgroundColor = Colours.primaryRed
+        bReady.backgroundColor = Colours.primaryRed
+        bCancel.backgroundColor = Colours.primaryRed
+        bAdjustBalance.backgroundColor = Colours.primaryRed
         
         // rounded corners
-        styleHelper.roundCorners(views: [bStartGame])
+        styleHelper.roundCorners(views: [bStartGame, bReady, bCancel, bAdjustBalance])
     }
     
     func hideControls() {
+        
+        bCancel.isHidden = true
+        
         if connectivityType != "host" {
             bStartGame.isHidden = true
+        }
+        else {
+            bReady.isHidden = true
         }
     }
     
@@ -93,9 +164,10 @@ class LobbyViewController : UIViewController {
     }
     
     func loadData() {
-        if players.count == 0 {
-            let hostPlayer = playerController.getCurrentPlayer()
-            players.append(hostPlayer)
+        if appDelegate.players.count == 0 {
+            var hostPlayer = playerController.getCurrentPlayer()
+            hostPlayer.isReady = true
+            appDelegate.players.append(hostPlayer)
         }
         DispatchQueue.main.async {
             self.tvPlayers.reloadData()
@@ -111,7 +183,6 @@ class LobbyViewController : UIViewController {
             vc.connectivityType = self.connectivityType
             vc.peerID = self.peerID
             vc.mcSession = self.mcSession
-            vc.players = self.players
             vc.playerID = self.playerID
             
             if nearbyServiceAdvertiser != nil {
@@ -123,7 +194,7 @@ class LobbyViewController : UIViewController {
     override func shouldPerformSegue(withIdentifier identifier: String?, sender: Any?) -> Bool {
         if let ident = identifier {
             if ident == "startBlackjack" {
-                if players.count < 2 {
+                if appDelegate.players.count < 2 {
                     let alertView = UIAlertController(title: "Please wait for others to join.",
                                                       message: "Trying to play Blackjack by yourself?",
                                                       preferredStyle: .alert)
@@ -136,14 +207,56 @@ class LobbyViewController : UIViewController {
                     
                     return false
                 }
+                else if !allPlayersReady() {
+                    if connectivityType == "host" {
+                        let alertView = UIAlertController(title: "Unable To Start Game",
+                                                          message: "Not all players are ready.",
+                                                          preferredStyle: .alert)
+                        alertView.addAction(UIAlertAction(title: "OK",
+                                                          style: .default,
+                                                          handler: { (_) in
+                                                            alertView.dismiss(animated: true, completion: nil)
+                        }))
+                        self.present(alertView, animated: true, completion: nil)
+                    }
+                    
+                    return false
+                }
             }
         }
         return true
     }
     
     func assignPlayerID() {
-        for i in 0...players.count-1 {
-            players[i].playerID = i
+        for i in 0...appDelegate.players.count-1 {
+            appDelegate.players[i].playerID = i
+        }
+    }
+    
+    func allPlayersReady() -> Bool {
+        var result = true
+        for player in appDelegate.players {
+            if !player.isReady {
+                result = false
+                break
+            }
+        }
+        
+        return result
+    }
+    
+    func playerReadyStyle(isReady: Bool) {
+        if isReady {
+            bCancel.isHidden = false
+            bReady.isHidden = true
+            bAdjustBalance.isEnabled = false
+            bAdjustBalance.backgroundColor = Colours.disabledRed
+        }
+        else {
+            bCancel.isHidden = true
+            bReady.isHidden = false
+            bAdjustBalance.isEnabled = true
+            bAdjustBalance.backgroundColor = Colours.primaryRed
         }
     }
         
@@ -183,11 +296,13 @@ class LobbyViewController : UIViewController {
         case "current-players":
             do {
                 let currentPlayers = try JSONDecoder().decode([Player].self, from: bbMsg.data!)
-                players = currentPlayers
+                appDelegate.players = currentPlayers
                 
-                if !receivedPlayerID {
-                    playerID = Int(bbMsg.message!)
-                    receivedPlayerID = true
+                if connectivityType == "connected" {
+                    if !receivedPlayerID {
+                        playerID = Int(bbMsg.message!)
+                        receivedPlayerID = true
+                    }
                 }
                 
                 DispatchQueue.main.async {
@@ -210,7 +325,7 @@ class LobbyViewController : UIViewController {
     }
     
     func addPlayer(newPlayer: Player) {
-        players.append(newPlayer)
+        appDelegate.players.append(newPlayer)
     }
     
     func sendJoinMessage() {
@@ -230,8 +345,8 @@ class LobbyViewController : UIViewController {
     
     func sendCurrentPlayers() {
         do {
-            let currentPlayersData = try JSONEncoder().encode(players)
-            let bbMessage = BBMessage(messageType: "current-players", message: String(players.count-1), data: currentPlayersData)
+            let currentPlayersData = try JSONEncoder().encode(appDelegate.players)
+            let bbMessage = BBMessage(messageType: "current-players", message: String(appDelegate.players.count-1), data: currentPlayersData)
             let messageData = try JSONEncoder().encode(bbMessage)
             
             try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
@@ -308,20 +423,22 @@ extension LobbyViewController : UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return players.count
+        return appDelegate.players.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "LobbyPlayerTableViewCell") as! LobbyPlayerTableViewCell
         
-        let player = players[indexPath.row]
+        let player = appDelegate.players[indexPath.row]
         cell.lblPlayerName.text = player.name
         cell.lblPlayerTitle.text = player.title
         if player.profilePicture != nil {
             //cell.ivPlayerProfilePicture.image = player.profilePicture
             
         }
+        cell.changeReadyStatus(isReady: player.isReady)
+        cell.lblStartingBalance.text = "$\(String(format: "%.2f", player.initialBalance!))"
         
         return cell
     }
@@ -330,7 +447,19 @@ extension LobbyViewController : UITableViewDataSource, UITableViewDelegate {
 class LobbyPlayerTableViewCell : UITableViewCell {
     
     @IBOutlet weak var ivPlayerProfilePicture: UIImageView!
+    @IBOutlet weak var ivCheckmark: UIImageView!
     @IBOutlet weak var lblPlayerName: UILabel!
     @IBOutlet weak var lblPlayerTitle: UILabel!
+    @IBOutlet weak var lblStartingBalance: UILabel!
     
+    func changeReadyStatus(isReady: Bool) {
+        if isReady {
+            self.ivPlayerProfilePicture.layer.opacity = 50
+            ivCheckmark.isHidden = false
+        }
+        else {
+            ivCheckmark.isHidden = true
+            self.ivPlayerProfilePicture.layer.opacity = 100
+        }
+    }
 }

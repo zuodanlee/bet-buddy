@@ -36,9 +36,9 @@ class BlackjackViewController : UIViewController {
                                               style: .default,
                                               handler: { (_) in
                                                 let rawInput = self.alertView.textFields![0].text!
-                                                let roundBet = Double(rawInput)
+                                                var roundBet = Double(rawInput)
                                                 if roundBet != nil {
-                                                    let player = self.players[self.playerID]
+                                                    let player = self.appDelegate.players[self.playerID]
                                                     if roundBet! > player.balance! {
                                                         self.alertView.message = "Insufficient balance!"
                                                         self.present(self.alertView, animated: true, completion: nil)
@@ -48,11 +48,9 @@ class BlackjackViewController : UIViewController {
                                                         self.present(self.alertView, animated: true, completion: nil)
                                                     }
                                                     else {
-                                                        self.players[self.playerID].roundBet = roundBet
-                                                        print(self.playerID)
-                                                        for player in self.players {
-                                                            print(player)
-                                                        }
+                                                        // valid input - proceed with bet change
+                                                        roundBet = Double(String(format: "%.2f", roundBet!)) // round bet to 2dp
+                                                        self.appDelegate.players[self.playerID].roundBet = roundBet
                                                         self.sendBetChange()
                                                         self.loadPlayers()
                                                     }
@@ -66,8 +64,7 @@ class BlackjackViewController : UIViewController {
         }
     }
     @IBAction func endRound(_ sender: Any) {
-        let outcomes = generateOutcomes()
-        payout(outcomes: outcomes)
+        payout()
         loadPlayers()
         
         lblPhase.text = "Payout Phase"
@@ -95,12 +92,12 @@ class BlackjackViewController : UIViewController {
     var connectivityType = "none"
     var peerID: MCPeerID!
     var mcSession: MCSession!
-    var players: [Player] = []
+    var appDelegate = UIApplication.shared.delegate as! AppDelegate
     var playerID: Int = 0
     var numConnectedPlayers = 1
     var timer: Timer!
-    var countdown = 30
-    let startingAmt: Double = 50
+    let countdownMax = 5
+    var countdown: Int!
     var player: Player!
     var isInitialLoad = true
     var alertView: UIAlertController!
@@ -184,13 +181,13 @@ class BlackjackViewController : UIViewController {
     
     func loadPlayers() {
         if isInitialLoad {
-            for i in 0...players.count-1 {
-                players[i].playerID = i
-                players[i].balance = startingAmt
-                players[i].roundBet = 0
+            for i in 0...appDelegate.players.count-1 {
+                appDelegate.players[i].playerID = i
+                appDelegate.players[i].balance = appDelegate.players[i].initialBalance
+                appDelegate.players[i].roundBet = 0
             }
             
-            player = players[playerID]
+            player = appDelegate.players[playerID]
             isInitialLoad = false
         }
         
@@ -206,7 +203,7 @@ class BlackjackViewController : UIViewController {
         }
         else if countdown == 0 {
             timer.invalidate()
-            bEndRound.isEnabled = true // allow banker to start the round
+            bEndRound.isEnabled = true // allow banker to end the round
             bEndRound.backgroundColor = Colours.primaryRed
             
             bPlaceBet.isEnabled = false // stop players from changing bets
@@ -225,47 +222,22 @@ class BlackjackViewController : UIViewController {
     }
     
     func startBettingPhase() {
+        countdown = countdownMax
         sendBettingPhase()
         startAsyncTimer(phase: "bet")
-        bEndRound.backgroundColor = Colours.disabledRed
-    }
-    
-    func generateOutcomes() -> [BlackjackOutcome] {
-        var outcomes: [BlackjackOutcome] = []
-        for i in 0...players.count-1 {
-            let cell = tvPlayers.cellForRow(at: IndexPath(row: i, section: 0)) as! BlackjackPlayerTableViewCell
-            let player = players[i]
-            
-            var didBankerWin = true
-            if cell.scOutcome.selectedSegmentIndex == 1 {
-                didBankerWin = false
-            }
-            
-            var multiplier = 1
-            if cell.scMultiplier.selectedSegmentIndex == 1 {
-                multiplier = 2
-            }
-            else if cell.scMultiplier.selectedSegmentIndex == 2 {
-                multiplier = 3
-            }
-            else if cell.scMultiplier.selectedSegmentIndex == 3 {
-                multiplier = 7
-            }
-            
-            var newOutcome = BlackjackOutcome(playerID: player.playerID!, roundBet: player.roundBet!, didBankerWin: didBankerWin, multiplier: multiplier)
-            
-            newOutcome.payout = newOutcome.calculatePayout()
-            
-            outcomes.append(newOutcome)
-        }
         
-        return outcomes
+        DispatchQueue.main.async {
+            self.bEndRound.backgroundColor = Colours.disabledRed
+        }
     }
     
-    func payout(outcomes: [BlackjackOutcome]) {
-        for i in 1...players.count-1 {
-            players[i].balance! += outcomes[i].payout!
-            players[0].balance! -= outcomes[i].payout!
+    func payout() {
+        for i in 1...appDelegate.players.count-1 {
+            player = appDelegate.players[i]
+            player.calculatePayout()
+            
+            appDelegate.players[i].balance! += player.payout!
+            appDelegate.players[0].balance! -= player.payout!
         }
     }
     
@@ -276,7 +248,7 @@ class BlackjackViewController : UIViewController {
         case "arrived-blackjack":
             if connectivityType == "host" {
                 numConnectedPlayers += 1
-                if numConnectedPlayers == players.count {
+                if numConnectedPlayers == appDelegate.players.count {
                     startBettingPhase()
                 }
             }
@@ -294,7 +266,7 @@ class BlackjackViewController : UIViewController {
         case "bet-change":
             do {
                 let currentPlayers = try JSONDecoder().decode([Player].self, from: bbMsg.data!)
-                players = currentPlayers
+                appDelegate.players = currentPlayers
                 
                 loadPlayers()
             } catch {
@@ -309,7 +281,7 @@ class BlackjackViewController : UIViewController {
         case "phase-payout":
             do {
                 let currentPlayers = try JSONDecoder().decode([Player].self, from: bbMsg.data!)
-                players = currentPlayers
+                appDelegate.players = currentPlayers
                 
                 DispatchQueue.main.async {
                     self.lblPhase.text = "Payout Phase"
@@ -357,7 +329,7 @@ class BlackjackViewController : UIViewController {
     
     func sendBetChange() {
         do {
-            let currentPlayersData = try JSONEncoder().encode(players)
+            let currentPlayersData = try JSONEncoder().encode(appDelegate.players)
             let bbMessage = BBMessage(messageType: "bet-change", message: nil, data: currentPlayersData)
             let messageData = try JSONEncoder().encode(bbMessage)
             
@@ -380,7 +352,7 @@ class BlackjackViewController : UIViewController {
     
     func sendPayoutPhase() {
         do {
-            let currentPlayersData = try JSONEncoder().encode(players)
+            let currentPlayersData = try JSONEncoder().encode(appDelegate.players)
             let bbMessage = BBMessage(messageType: "phase-payout", message: nil, data: currentPlayersData)
             let messageData = try JSONEncoder().encode(bbMessage)
             
@@ -456,22 +428,21 @@ extension BlackjackViewController : UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return players.count
+        return appDelegate.players.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
         let cell = tableView.dequeueReusableCell(withIdentifier: "BlackjackPlayerTableViewCell") as! BlackjackPlayerTableViewCell
         
-        let player = players[indexPath.row]
+        let player = appDelegate.players[indexPath.row]
         cell.lblPlayerName.text = player.name
         cell.lblPlayerTitle.text = player.title
         if player.profilePicture != nil {
             //cell.ivPlayerProfilePicture.image = player.profilePicture
             
         }
-        cell.lblBalance.text = "Balance: $\(player.balance!)"
-        cell.lblRoundBet.text = "Round Bet: $\(player.roundBet!)"
+        cell.lblBalance.text = "$\(String(format: "%.2f", player.balance!))"
+        cell.lblRoundBet.text = "$\(String(format: "%.2f", player.roundBet!))"
         cell.scOutcome.selectedSegmentIndex = 0
         cell.scMultiplier.selectedSegmentIndex = 0
         cell.selectionStyle = .none
@@ -487,9 +458,34 @@ extension BlackjackViewController : UITableViewDataSource, UITableViewDelegate {
             cell.scOutcome.isEnabled = false
             cell.scMultiplier.isEnabled = false
         }
+        cell.delegate = self
         
         return cell
     }
+}
+
+extension BlackjackViewController : BlackjackPlayerTableViewCellDelegate {
+    
+    func scChangeValue(cell: BlackjackPlayerTableViewCell) {
+        let rowNum = self.tvPlayers.indexPath(for: cell)!.row
+        appDelegate.players[rowNum].outcomeIndex = cell.scOutcome.selectedSegmentIndex
+        
+        var multiplier = 1
+        if cell.scMultiplier.selectedSegmentIndex == 1 {
+            multiplier = 2
+        }
+        else if cell.scMultiplier.selectedSegmentIndex == 2 {
+            multiplier = 3
+        }
+        else if cell.scMultiplier.selectedSegmentIndex == 3 {
+            multiplier = 7
+        }
+        appDelegate.players[rowNum].multiplier = multiplier
+    }
+}
+
+protocol BlackjackPlayerTableViewCellDelegate: AnyObject {
+    func scChangeValue(cell: BlackjackPlayerTableViewCell)
 }
 
 class BlackjackPlayerTableViewCell : UITableViewCell {
@@ -503,4 +499,9 @@ class BlackjackPlayerTableViewCell : UITableViewCell {
     @IBOutlet weak var scMultiplier: UISegmentedControl!
     @IBOutlet weak var svHostBanner: UIStackView!
     
+    weak var delegate: BlackjackPlayerTableViewCellDelegate?
+    
+    @IBAction func changeOutcome(_ sender: Any) {
+        delegate?.scChangeValue(cell: self)
+    }
 }
