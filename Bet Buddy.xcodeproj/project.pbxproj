@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		40C8AF1525C9117E0031095B /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C8AF1425C9117E0031095B /* ProfileViewController.swift */; };
 		40C8AF3125C953090031095B /* DataBaseHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C8AF3025C953090031095B /* DataBaseHelper.swift */; };
-		40C8AF3525C96BB50031095B /* Downloads in Resources */ = {isa = PBXBuildFile; fileRef = 40C8AF3425C96BB50031095B /* Downloads */; };
 		8B320225F04CC9AEDA2DA412 /* Pods_Bet_Buddy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9FC8D3864F71DDB86CD6492 /* Pods_Bet_Buddy.framework */; };
 		F1146FEF25BC130600DE677F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1146FEE25BC130600DE677F /* AppDelegate.swift */; };
 		F1146FF125BC130600DE677F /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1146FF025BC130600DE677F /* SceneDelegate.swift */; };
@@ -32,7 +31,6 @@
 		03356D0510B47374EE6F853E /* Pods-Bet Buddy.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Bet Buddy.release.xcconfig"; path = "Target Support Files/Pods-Bet Buddy/Pods-Bet Buddy.release.xcconfig"; sourceTree = "<group>"; };
 		40C8AF1425C9117E0031095B /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		40C8AF3025C953090031095B /* DataBaseHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DataBaseHelper.swift; path = ViewControllers/DataBaseHelper.swift; sourceTree = "<group>"; };
-		40C8AF3425C96BB50031095B /* Downloads */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Downloads; path = ../../../../Downloads; sourceTree = "<group>"; };
 		D9FC8D3864F71DDB86CD6492 /* Pods_Bet_Buddy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Bet_Buddy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1146FEB25BC130600DE677F /* Bet Buddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Bet Buddy.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1146FEE25BC130600DE677F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -139,7 +137,6 @@
 				F1146FFC25BC130E00DE677F /* LaunchScreen.storyboard */,
 				F114701E25C3ADA300DE677F /* GoogleService-Info.plist */,
 				F1146FFF25BC130E00DE677F /* Info.plist */,
-				40C8AF3425C96BB50031095B /* Downloads */,
 				F1146FF725BC130700DE677F /* Bet_Buddy.xcdatamodeld */,
 			);
 			path = "Bet Buddy";
@@ -223,7 +220,6 @@
 			files = (
 				F1146FFE25BC130E00DE677F /* LaunchScreen.storyboard in Resources */,
 				F16D4B1425C7A8BE00F921F8 /* Main.storyboard in Resources */,
-				40C8AF3525C96BB50031095B /* Downloads in Resources */,
 				F1146FFB25BC130E00DE677F /* Assets.xcassets in Resources */,
 				F114701F25C3ADA300DE677F /* GoogleService-Info.plist in Resources */,
 				F114700825BC9B1500DE677F /* NTR-Regular.ttf in Resources */,
