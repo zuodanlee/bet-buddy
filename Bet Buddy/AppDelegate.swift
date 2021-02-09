@@ -11,14 +11,20 @@ import Firebase
 
 class PlayerController {
     
-    // Retrieve all gamemodes from Core Data
+    let initialBalance: Double = 50
+    
+    // retrieve current player's profile details from Core Data
     func getCurrentPlayer()->Player {
         var reqPlayer: Player!
+        //let profile = DataBaseHelper().getProfile()
         
         // if not logged in
         if true {
-            reqPlayer = Player(name: UIDevice.current.name, title: "Beginner", profilePicture: nil, initialBalance: 50)
+            reqPlayer = Player(name: UIDevice.current.name, title: "Beginner", profilePicture: nil, initialBalance: initialBalance)
         }
+        //else {
+        //    reqPlayer = Player(name: UIDevice.current.name, title: "Beginner", profilePicture: //profile?.image, initialBalance: initialBalance)
+        //}
         
         return reqPlayer
     }
@@ -37,11 +43,16 @@ class StyleHelper {
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var players: [Player] = []
+    var orientationLock = UIInterfaceOrientationMask.portrait
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         FirebaseApp.configure()
         return true
+    }
+    
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+            return self.orientationLock
     }
 
     // MARK: UISceneSession Lifecycle

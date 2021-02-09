@@ -96,7 +96,7 @@ class BlackjackViewController : UIViewController {
     var playerID: Int = 0
     var numConnectedPlayers = 1
     var timer: Timer!
-    let countdownMax = 5
+    let countdownMax = 15
     var countdown: Int!
     var player: Player!
     var isInitialLoad = true

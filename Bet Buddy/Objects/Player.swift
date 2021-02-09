@@ -11,7 +11,7 @@ import UIKit
 struct Player : Codable {
     var name: String
     var title: String
-    var profilePicture: String?
+    var profilePicture: Data?
     var playerID: Int?
     var initialBalance: Double?
     var balance: Double?
