@@ -19,6 +19,7 @@ class LobbyViewController : UIViewController {
     @IBOutlet weak var bAdjustBalance: UIButton!
     
     @IBAction func adjustBalance(_ sender: Any) {
+        
         if connectivityType == "connected" || connectivityType == "host" {
             let alertView = UIAlertController(title: "Adjust Starting Balance",
                                               message: "Please enter your desired amount.",
@@ -44,7 +45,7 @@ class LobbyViewController : UIViewController {
                                                     else {
                                                         // valid input - proceed with starting balance change
                                                         startBal = Double(String(format: "%.2f", startBal!)) // round starting balance to 2dp
-                                                        self.appDelegate.players[self.playerID].initialBalance = startBal
+                                                        self.adjustPlayerBalance(newBal: startBal!)
                                                         self.sendCurrentPlayers()
                                                         self.loadData()
                                                     }
@@ -59,7 +60,7 @@ class LobbyViewController : UIViewController {
     }
     @IBAction func sendReady(_ sender: Any) {
         if connectivityType == "connected" {
-            appDelegate.players[playerID].isReady = true
+            appDelegate.players[appDelegate.getPlayerIndex()].isReady = true
             sendCurrentPlayers()
             playerReadyStyle(isReady: true)
             
@@ -68,7 +69,7 @@ class LobbyViewController : UIViewController {
     }
     @IBAction func sendCancel(_ sender: Any) {
         if connectivityType == "connected" {
-            appDelegate.players[playerID].isReady = false
+            appDelegate.players[appDelegate.getPlayerIndex()].isReady = false
             sendCurrentPlayers()
             playerReadyStyle(isReady: false)
             
@@ -82,7 +83,7 @@ class LobbyViewController : UIViewController {
                     let bbMessage = BBMessage(messageType: "start-game", message: nil, data: nil)
                     let messageData = try JSONEncoder().encode(bbMessage)
                     
-                    try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
+                    try? appDelegate.mcSession.send(messageData, toPeers: appDelegate.mcSession.connectedPeers, with: .reliable)
                 } catch {
                     fatalError("Unable to encode player details.")
                 }
@@ -91,20 +92,18 @@ class LobbyViewController : UIViewController {
     }
     
     var connectivityType = "none"
-    var peerID: MCPeerID!
-    var mcSession: MCSession!
-    var nearbyServiceAdvertiser: MCNearbyServiceAdvertiser!
     var appDelegate = UIApplication.shared.delegate as! AppDelegate
-    var playerID: Int!
     let playerController = PlayerController()
-    var receivedPlayerID = false
+    var rejoinPhase: String?
+    var betCountdown: Int!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        appDelegate.players = []
+        
         if connectivityType == "host" {
             lblConnectivityType.text = "Blackjack Host"
-            playerID = 0
             loadData()
         }
         else if connectivityType == "join" {
@@ -127,6 +126,12 @@ class LobbyViewController : UIViewController {
         }
         else if connectivityType == "join" {
             joinRoom()
+        }
+        
+        if rejoinPhase != nil {
+            DispatchQueue.main.async {
+                self.performSegue(withIdentifier: "startBlackjack", sender: self)
+            }
         }
     }
     
@@ -157,9 +162,9 @@ class LobbyViewController : UIViewController {
     }
     
     func setupConnectivity() {
-        peerID = MCPeerID(displayName: UIDevice.current.name)
-        mcSession = MCSession(peer: peerID, securityIdentity: nil, encryptionPreference: .required)
-        mcSession.delegate = self
+        appDelegate.peerID = MCPeerID(displayName: UIDevice.current.name)
+        appDelegate.mcSession = MCSession(peer: appDelegate.peerID, securityIdentity: nil, encryptionPreference: .required)
+        appDelegate.mcSession.delegate = self
         print("Connectivity setup complete!")
     }
     
@@ -177,16 +182,12 @@ class LobbyViewController : UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.destination is BlackjackViewController
         {
-            assignPlayerID()
-            
             let vc = segue.destination as! BlackjackViewController
             vc.connectivityType = self.connectivityType
-            vc.peerID = self.peerID
-            vc.mcSession = self.mcSession
-            vc.playerID = self.playerID
+            vc.countdown = betCountdown
             
-            if nearbyServiceAdvertiser != nil {
-                nearbyServiceAdvertiser.stopAdvertisingPeer()
+            if rejoinPhase != nil {
+                vc.phase = rejoinPhase!
             }
         }
     }
@@ -227,12 +228,6 @@ class LobbyViewController : UIViewController {
         return true
     }
     
-    func assignPlayerID() {
-        for i in 0...appDelegate.players.count-1 {
-            appDelegate.players[i].playerID = i
-        }
-    }
-    
     func allPlayersReady() -> Bool {
         var result = true
         for player in appDelegate.players {
@@ -261,14 +256,14 @@ class LobbyViewController : UIViewController {
     }
         
     func hostRoom() {
-        self.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(peer: peerID, discoveryInfo: nil, serviceType: "bb-rm")
-        nearbyServiceAdvertiser.delegate = self
-        nearbyServiceAdvertiser.startAdvertisingPeer()
+        appDelegate.nearbyServiceAdvertiser = MCNearbyServiceAdvertiser(peer: appDelegate.peerID, discoveryInfo: nil, serviceType: "bb-rm")
+        appDelegate.nearbyServiceAdvertiser.delegate = self
+        appDelegate.nearbyServiceAdvertiser.startAdvertisingPeer()
         print("Room now discoverable!")
     }
     
     func joinRoom() {
-        let mcBrowser = MCBrowserViewController(serviceType: "bb-rm", session: mcSession)
+        let mcBrowser = MCBrowserViewController(serviceType: "bb-rm", session: appDelegate.mcSession)
         mcBrowser.delegate = self
         present(mcBrowser, animated: true)
         print("Searching for rooms...")
@@ -298,13 +293,6 @@ class LobbyViewController : UIViewController {
                 let currentPlayers = try JSONDecoder().decode([Player].self, from: bbMsg.data!)
                 appDelegate.players = currentPlayers
                 
-                if connectivityType == "connected" {
-                    if !receivedPlayerID {
-                        playerID = Int(bbMsg.message!)
-                        receivedPlayerID = true
-                    }
-                }
-                
                 DispatchQueue.main.async {
                     self.tvPlayers.reloadData()
                 }
@@ -319,6 +307,22 @@ class LobbyViewController : UIViewController {
                 }
             }
             
+        case "rejoin":
+            if connectivityType == "connected" {
+                do {
+                    let currentPlayers = try JSONDecoder().decode([Player].self, from: bbMsg.data!)
+                    appDelegate.players = currentPlayers
+                    let messages = bbMsg.message!.split(separator: ":")
+                    rejoinPhase = String(messages[0])
+                    
+                    if messages.count > 1 {
+                        betCountdown = Int(messages[1])
+                    }
+                } catch {
+                    fatalError("Unable to process the received data.")
+                }
+            }
+            
         default:
             print("Lobby.swift: Unrecognised message [\(msgType)]")
         }
@@ -326,6 +330,11 @@ class LobbyViewController : UIViewController {
     
     func addPlayer(newPlayer: Player) {
         appDelegate.players.append(newPlayer)
+    }
+    
+    func adjustPlayerBalance(newBal: Double) {
+        let playerIndex = appDelegate.getPlayerIndex()
+        appDelegate.players[playerIndex].initialBalance = newBal
     }
     
     func sendJoinMessage() {
@@ -336,7 +345,7 @@ class LobbyViewController : UIViewController {
                 let bbMessage = BBMessage(messageType: "join", message: nil, data: playerData)
                 let messageData = try JSONEncoder().encode(bbMessage)
                 
-                try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
+                try? appDelegate.mcSession.send(messageData, toPeers: appDelegate.mcSession.connectedPeers, with: .reliable)
             } catch {
                 fatalError("Unable to encode player details.")
             }
@@ -346,10 +355,10 @@ class LobbyViewController : UIViewController {
     func sendCurrentPlayers() {
         do {
             let currentPlayersData = try JSONEncoder().encode(appDelegate.players)
-            let bbMessage = BBMessage(messageType: "current-players", message: String(appDelegate.players.count-1), data: currentPlayersData)
+            let bbMessage = BBMessage(messageType: "current-players", message: nil, data: currentPlayersData)
             let messageData = try JSONEncoder().encode(bbMessage)
             
-            try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
+            try? appDelegate.mcSession.send(messageData, toPeers: appDelegate.mcSession.connectedPeers, with: .reliable)
         } catch {
             fatalError("Unable to encode player details.")
         }
@@ -406,13 +415,14 @@ extension LobbyViewController : MCBrowserViewControllerDelegate {
     func browserViewControllerWasCancelled(_ browserViewController: MCBrowserViewController) {
         dismiss(animated: true, completion: nil)
         connectivityType = "none"
+        self.dismiss(animated: true, completion: nil)
     }
 }
 
 extension LobbyViewController : MCNearbyServiceAdvertiserDelegate {
     
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
-        invitationHandler(true, mcSession)
+        invitationHandler(true, appDelegate.mcSession)
     }
 }
 

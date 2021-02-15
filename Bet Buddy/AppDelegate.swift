@@ -8,10 +8,12 @@
 import UIKit
 import CoreData
 import Firebase
+import MultipeerConnectivity
 
 class PlayerController {
     
     let initialBalance: Double = 50
+    let playerID = (UIApplication.shared.delegate as! AppDelegate).playerID
     
     // retrieve current player's profile details from Core Data
     func getCurrentPlayer()->Player {
@@ -20,7 +22,7 @@ class PlayerController {
         
         // if not logged in
         if true {
-            reqPlayer = Player(name: UIDevice.current.name, title: "Beginner", profilePicture: nil, initialBalance: initialBalance)
+            reqPlayer = Player(name: UIDevice.current.name, title: "Beginner", profilePicture: nil, playerID: playerID, initialBalance: initialBalance)
         }
         //else {
         //    reqPlayer = Player(name: UIDevice.current.name, title: "Beginner", profilePicture: //profile?.image, initialBalance: initialBalance)
@@ -43,7 +45,11 @@ class StyleHelper {
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var players: [Player] = []
+    let playerID = UIDevice.current.identifierForVendor!.uuidString
     var orientationLock = UIInterfaceOrientationMask.portrait
+    var peerID: MCPeerID!
+    var mcSession: MCSession!
+    var nearbyServiceAdvertiser: MCNearbyServiceAdvertiser!
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
@@ -53,6 +59,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
             return self.orientationLock
+    }
+    
+    func applicationWillTerminate(_ application: UIApplication) {
+        mcSession.disconnect()
+    }
+    
+    func getPlayerIndex() -> Int {
+        for i in 0...players.count {
+            if players[i].playerID == playerID {
+                return i
+            }
+        }
+        
+        return -1
+    }
+    
+    func getPlayer(withPlayerID: String) -> Player? {
+        for i in 0...players.count {
+            if players[i].playerID == withPlayerID {
+                return players[i]
+            }
+        }
+        
+        return nil
     }
 
     // MARK: UISceneSession Lifecycle

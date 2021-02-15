@@ -38,7 +38,7 @@ class BlackjackViewController : UIViewController {
                                                 let rawInput = self.alertView.textFields![0].text!
                                                 var roundBet = Double(rawInput)
                                                 if roundBet != nil {
-                                                    let player = self.appDelegate.players[self.playerID]
+                                                    let player = self.appDelegate.players[self.appDelegate.getPlayerIndex()]
                                                     if roundBet! > player.balance! {
                                                         self.alertView.message = "Insufficient balance!"
                                                         self.present(self.alertView, animated: true, completion: nil)
@@ -50,7 +50,7 @@ class BlackjackViewController : UIViewController {
                                                     else {
                                                         // valid input - proceed with bet change
                                                         roundBet = Double(String(format: "%.2f", roundBet!)) // round bet to 2dp
-                                                        self.appDelegate.players[self.playerID].roundBet = roundBet
+                                                        self.adjustRoundBet(newBet: roundBet!)
                                                         self.sendBetChange()
                                                         self.loadPlayers()
                                                     }
@@ -68,6 +68,7 @@ class BlackjackViewController : UIViewController {
         loadPlayers()
         
         lblPhase.text = "Payout Phase"
+        phase = "payout"
         sendPayoutPhase()
         
         bEndGame.isEnabled = true
@@ -86,14 +87,17 @@ class BlackjackViewController : UIViewController {
         }
     }
     @IBAction func endGame(_ sender: Any) {
+        appDelegate.players = []
         sendEndGame()
+        
+        if appDelegate.nearbyServiceAdvertiser != nil {
+            appDelegate.nearbyServiceAdvertiser.stopAdvertisingPeer()
+        }
     }
     
     var connectivityType = "none"
-    var peerID: MCPeerID!
-    var mcSession: MCSession!
     var appDelegate = UIApplication.shared.delegate as! AppDelegate
-    var playerID: Int = 0
+    var playerID: String!
     var numConnectedPlayers = 1
     var timer: Timer!
     let countdownMax = 15
@@ -101,6 +105,7 @@ class BlackjackViewController : UIViewController {
     var player: Player!
     var isInitialLoad = true
     var alertView: UIAlertController!
+    var phase: String?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -116,7 +121,26 @@ class BlackjackViewController : UIViewController {
         
         // report arrival to host
         if connectivityType == "connected" {
-            sendArrived()
+            if phase != nil {
+                if phase == "bet" {
+                    startAsyncTimer(phase: "bet")
+                    DispatchQueue.main.async {
+                        self.bPlaceBet.isEnabled = true
+                        self.bPlaceBet.backgroundColor = Colours.primaryRed
+                    }
+                }
+                else if phase == "play" {
+                    lblPhase.text = "Play Phase"
+                    startPlayPhase()
+                }
+                else if phase == "payout" {
+                    lblPhase.text = "Payout Phase"
+                    startPayoutPhase()
+                }
+            }
+            else {
+                sendArrived()
+            }
         }
     }
     
@@ -161,23 +185,24 @@ class BlackjackViewController : UIViewController {
         if segue.destination is HomeViewController
         {
             let vc = segue.destination as! HomeViewController
-            vc.mcSession = self.mcSession
+            vc.mcSession = appDelegate.mcSession
         }
     }
     
     func setupConnectivity() {
-        mcSession.delegate = self
+        appDelegate.mcSession.delegate = self
     }
     
     func loadPlayers() {
         if isInitialLoad {
-            for i in 0...appDelegate.players.count-1 {
-                appDelegate.players[i].playerID = i
-                appDelegate.players[i].balance = appDelegate.players[i].initialBalance
-                appDelegate.players[i].roundBet = 0
+            if phase == nil {
+                for i in 0...appDelegate.players.count-1 {
+                    appDelegate.players[i].balance = appDelegate.players[i].initialBalance
+                    appDelegate.players[i].roundBet = 0
+                }
             }
             
-            player = appDelegate.players[playerID]
+            player = appDelegate.players[appDelegate.getPlayerIndex()]
             isInitialLoad = false
         }
         
@@ -189,36 +214,47 @@ class BlackjackViewController : UIViewController {
     @objc func updateBetTimer() {
         if countdown > 0 {
             lblPhase.text = "Betting Phase: \(String(countdown))"
+            sendUpdateTimer()
             countdown -= 1
         }
         else if countdown == 0 {
-            timer.invalidate()
-            bEndRound.isEnabled = true // allow banker to end the round
-            bEndRound.backgroundColor = Colours.primaryRed
-            
-            bPlaceBet.isEnabled = false // stop players from changing bets
-            bPlaceBet.backgroundColor = Colours.disabledRed
-            
-            if connectivityType == "host" {
-                sendPlayPhase()
-                lblPhase.text = "Play Phase"
-            }
-            else {
-                if alertView != nil {
-                    alertView.dismiss(animated: true, completion: nil)
-                }
-            }
+            startPlayPhase()
         }
     }
     
     func startBettingPhase() {
         countdown = countdownMax
         sendBettingPhase()
+        phase = "bet"
         startAsyncTimer(phase: "bet")
         
         DispatchQueue.main.async {
             self.bEndRound.backgroundColor = Colours.disabledRed
         }
+    }
+    
+    func startPlayPhase() {
+        if timer != nil {
+            timer.invalidate()
+        }
+        bEndRound.isEnabled = true // allow banker to end the round
+        bEndRound.backgroundColor = Colours.primaryRed
+        
+        if connectivityType == "host" {
+            sendPlayPhase()
+            phase = "play"
+            lblPhase.text = "Play Phase"
+        }
+        else {
+            if alertView != nil {
+                alertView.dismiss(animated: true, completion: nil)
+            }
+        }
+    }
+    
+    func startPayoutPhase() {
+        bPlaceBet.isEnabled = false // stop players from changing bets
+        bPlaceBet.backgroundColor = Colours.disabledRed
     }
     
     func payout() {
@@ -238,6 +274,11 @@ class BlackjackViewController : UIViewController {
         }
     }
     
+    func adjustRoundBet(newBet: Double) {
+        let playerIndex = appDelegate.getPlayerIndex()
+        appDelegate.players[playerIndex].roundBet = newBet
+    }
+    
     func processMessage(bbMsg: BBMessage) {
         let msgType = bbMsg.messageType
         
@@ -252,8 +293,6 @@ class BlackjackViewController : UIViewController {
             
         case "phase-bet":
             if connectivityType == "connected" {
-                countdown = Int(bbMsg.message!)! // time in seconds
-                startAsyncTimer(phase: "bet")
                 DispatchQueue.main.async {
                     self.bPlaceBet.isEnabled = true
                     self.bPlaceBet.backgroundColor = Colours.primaryRed
@@ -265,14 +304,22 @@ class BlackjackViewController : UIViewController {
                 let currentPlayers = try JSONDecoder().decode([Player].self, from: bbMsg.data!)
                 appDelegate.players = currentPlayers
                 
+                for player in appDelegate.players {
+                    print(player)
+                }
+                
                 loadPlayers()
             } catch {
                 fatalError("Unable to process the received data.")
             }
             
         case "phase-play":
-            DispatchQueue.main.async {
-                self.lblPhase.text = "Play Phase"
+            if connectivityType == "connected" {
+                DispatchQueue.main.async {
+                    self.bPlaceBet.isEnabled = false // stop players from changing bets
+                    self.bPlaceBet.backgroundColor = Colours.disabledRed
+                    self.lblPhase.text = "Play Phase"
+                }
             }
             
         case "phase-payout":
@@ -291,8 +338,30 @@ class BlackjackViewController : UIViewController {
             
         case "end-game":
             if connectivityType == "connected" {
+                appDelegate.players = []
                 DispatchQueue.main.async {
                     self.performSegue(withIdentifier: "endBlackjack", sender: self)
+                }
+            }
+            
+        case "join":
+            if connectivityType == "host" {
+                do {
+                    let newPlayer = try JSONDecoder().decode(Player.self, from: bbMsg.data!)
+                    
+                    if appDelegate.getPlayer(withPlayerID: newPlayer.playerID) != nil {
+                        sendRejoin()
+                    }
+                } catch {
+                    fatalError("Unable to process the received data.")
+                }
+            }
+            
+        case "update-timer":
+            if connectivityType == "connected" {
+                let countdownStr: String = bbMsg.message!
+                DispatchQueue.main.async {
+                    self.lblPhase.text = "Betting Phase: \(countdownStr)"
                 }
             }
             
@@ -307,7 +376,7 @@ class BlackjackViewController : UIViewController {
             let bbMessage = BBMessage(messageType: "arrived-blackjack", message: nil, data: nil)
             let messageData = try JSONEncoder().encode(bbMessage)
             
-            try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
+            try? appDelegate.mcSession.send(messageData, toPeers: appDelegate.mcSession.connectedPeers, with: .reliable)
         } catch {
             fatalError("Unable to encode player details.")
         }
@@ -318,7 +387,7 @@ class BlackjackViewController : UIViewController {
             let bbMessage = BBMessage(messageType: "phase-bet", message: String(countdown), data: nil)
             let messageData = try JSONEncoder().encode(bbMessage)
             
-            try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
+            try? appDelegate.mcSession.send(messageData, toPeers: appDelegate.mcSession.connectedPeers, with: .reliable)
         } catch {
             fatalError("Unable to encode player details.")
         }
@@ -330,7 +399,7 @@ class BlackjackViewController : UIViewController {
             let bbMessage = BBMessage(messageType: "bet-change", message: nil, data: currentPlayersData)
             let messageData = try JSONEncoder().encode(bbMessage)
             
-            try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
+            try? appDelegate.mcSession.send(messageData, toPeers: appDelegate.mcSession.connectedPeers, with: .reliable)
         } catch {
             fatalError("Unable to encode player details.")
         }
@@ -341,7 +410,7 @@ class BlackjackViewController : UIViewController {
             let bbMessage = BBMessage(messageType: "phase-play", message: nil, data: nil)
             let messageData = try JSONEncoder().encode(bbMessage)
             
-            try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
+            try? appDelegate.mcSession.send(messageData, toPeers: appDelegate.mcSession.connectedPeers, with: .reliable)
         } catch {
             fatalError("Unable to encode player details.")
         }
@@ -353,7 +422,7 @@ class BlackjackViewController : UIViewController {
             let bbMessage = BBMessage(messageType: "phase-payout", message: nil, data: currentPlayersData)
             let messageData = try JSONEncoder().encode(bbMessage)
             
-            try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
+            try? appDelegate.mcSession.send(messageData, toPeers: appDelegate.mcSession.connectedPeers, with: .reliable)
         } catch {
             fatalError("Unable to encode player details.")
         }
@@ -364,7 +433,30 @@ class BlackjackViewController : UIViewController {
             let bbMessage = BBMessage(messageType: "end-game", message: nil, data: nil)
             let messageData = try JSONEncoder().encode(bbMessage)
             
-            try? mcSession.send(messageData, toPeers: mcSession.connectedPeers, with: .reliable)
+            try? appDelegate.mcSession.send(messageData, toPeers: appDelegate.mcSession.connectedPeers, with: .reliable)
+        } catch {
+            fatalError("Unable to encode player details.")
+        }
+    }
+    
+    func sendRejoin() {
+        do {
+            let currentPlayersData = try JSONEncoder().encode(appDelegate.players)
+            let bbMessage = BBMessage(messageType: "rejoin", message: phase! + ":" + String(countdown), data: currentPlayersData)
+            let messageData = try JSONEncoder().encode(bbMessage)
+            
+            try? appDelegate.mcSession.send(messageData, toPeers: appDelegate.mcSession.connectedPeers, with: .reliable)
+        } catch {
+            fatalError("Unable to encode player details.")
+        }
+    }
+    
+    func sendUpdateTimer() {
+        do {
+            let bbMessage = BBMessage(messageType: "update-timer", message: String(countdown), data: nil)
+            let messageData = try JSONEncoder().encode(bbMessage)
+            
+            try? appDelegate.mcSession.send(messageData, toPeers: appDelegate.mcSession.connectedPeers, with: .reliable)
         } catch {
             fatalError("Unable to encode player details.")
         }

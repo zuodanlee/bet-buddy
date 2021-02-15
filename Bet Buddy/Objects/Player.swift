@@ -12,7 +12,7 @@ struct Player : Codable {
     var name: String
     var title: String
     var profilePicture: Data?
-    var playerID: Int?
+    var playerID: String
     var initialBalance: Double?
     var balance: Double?
     var roundBet: Double?
